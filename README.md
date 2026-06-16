@@ -71,14 +71,4 @@ npx expo run:ios
 - `store/`: Zustand state management with MMKV persistence.
 - `assets/`: Custom badges, icons, and fonts.
 
-## 📜 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
 Built with ❤️ by [Snaehath](https://github.com/Snaehath)
