@@ -1,20 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserProfile, DEFAULT_PROFILE } from "@/types";
 
 const PROFILE_KEY = "AQUAFLOW_USER_PROFILE";
-
-export type UserProfile = {
-  weight: number;      // in kg
-  activityLevel: 1 | 1.2 | 1.5; // sedentary, active, athletic
-  gender: "male" | "female" | "other";
-  tempUnit?: "C" | "F";
-};
-
-export const DEFAULT_PROFILE: UserProfile = {
-  weight: 70,
-  activityLevel: 1,
-  gender: "other",
-  tempUnit: "F",
-};
 
 export const getProfile = async (): Promise<UserProfile> => {
   try {

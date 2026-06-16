@@ -4,6 +4,7 @@ import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { Toast } from "../components/ui/Toast";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -42,6 +43,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: "#f0f9ff" },
         }}
       />
+      <Toast />
     </>
   );
 }

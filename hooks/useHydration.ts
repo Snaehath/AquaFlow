@@ -1,23 +1,31 @@
+// services
 import { getCurrentLocation } from "@/services/LocationService";
 import { getWeatherData } from "@/services/WeatherService";
+import { getProfile } from "../services/ProfileService";
+
+// state & types
 import { useHydrationStore } from "@/store/hydrationStore";
-import { WeatherState } from "@/types";
+import { WeatherState, UserProfile } from "@/types";
+
+// hooks & router
 import { useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
+
+// constants & utils
 import { BeverageType } from "../constants/beverages";
-import {
-    calculateBaseGoal,
-    getProfile,
-    UserProfile,
-} from "../services/ProfileService";
+import { 
+  calculateProgress, 
+  calculateCompletedBottles, 
+  calculateBaseGoal 
+} from "@/utils/hydration";
 
 const useHydration = () => {
+  // hooks
   const navigation = useNavigation();
 
-  // Use selectors to avoid infinite loops
+  // store state & actions
   const intake = useHydrationStore((s) => s.intake);
   const logs = useHydrationStore((s) => s.logs);
-
   const streak = useHydrationStore((s) => s.streak);
   const weeklyVolume = useHydrationStore((s) => s.weeklyVolume);
   const addIntakeAction = useHydrationStore((s) => s.addIntake);
@@ -25,6 +33,7 @@ const useHydration = () => {
   const resetIntakeAction = useHydrationStore((s) => s.resetIntake);
   const checkDayReset = useHydrationStore((s) => s.checkDayReset);
 
+  // local state
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [weather, setWeather] = useState<WeatherState | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -35,7 +44,6 @@ const useHydration = () => {
 
   const initializeApp = useCallback(async () => {
     try {
-      // These actions are stable references from the store
       checkDayReset();
       const userProfile = await getProfile();
       setProfile(userProfile);
@@ -85,11 +93,8 @@ const useHydration = () => {
 
     streak,
     weeklyVolume: Math.round(weeklyVolume),
-    completedBottles: Math.floor(intake / effectiveGoal),
-    progress:
-      intake > 0 && intake % effectiveGoal === 0
-        ? 1.0
-        : (intake % effectiveGoal) / effectiveGoal,
+    completedBottles: calculateCompletedBottles(intake, effectiveGoal),
+    progress: calculateProgress(intake, effectiveGoal),
     isGoalReached: intake >= effectiveGoal,
     lastBeverageType:
       logs.length > 0 ? logs[0].type : ("water" as BeverageType),

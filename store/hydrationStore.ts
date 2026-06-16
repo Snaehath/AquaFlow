@@ -1,15 +1,27 @@
+// services & storage
 import {
   scheduleSmartReminder,
-  sendAchievementUnlocked,
   sendGoalCelebration,
 } from "@/services/NotificationService";
 import { mmkvStorage } from "@/services/storage";
 import { HydrationLog } from "@/types";
+
+// libraries
 import * as Haptics from "expo-haptics";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { BEVERAGES, BeverageType } from "../constants/beverages";
 
+// constants & utils
+import { BeverageType } from "../constants/beverages";
+import { checkAchievements } from "@/services/AchievementService";
+import { getTodayString, getYesterdayString, getWeekStart } from "@/utils/date";
+import { 
+  calculateEffectiveAmount, 
+  calculateCompletedBottles, 
+  hasCrossedGoal 
+} from "@/utils/hydration";
+
+// store interface
 interface HydrationStore {
   intake: number;
   logs: HydrationLog[];
@@ -21,7 +33,7 @@ interface HydrationStore {
   lastWeekReset: string;
   alwaysNotify: boolean;
 
-  // Actions
+  // actions
   addIntake: (
     amount: number,
     type?: BeverageType,
@@ -35,27 +47,14 @@ interface HydrationStore {
   setAlwaysNotify: (enabled: boolean) => void;
 }
 
-const getTodayString = () => new Date().toISOString().split("T")[0];
-const getYesterdayString = () => {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().split("T")[0];
-};
-
-const getWeekStart = () => {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff)).toISOString().split("T")[0];
-};
-
+// store implementation
 export const useHydrationStore = create<HydrationStore>()(
   persist(
     (set, get) => ({
       intake: 0,
       logs: [],
       lastDate: getTodayString(),
-      streak: 0,
+      streak: 1,
       lastGoalMetDate: null,
       unlockedAchievements: [],
       weeklyVolume: 0,
@@ -68,29 +67,6 @@ export const useHydrationStore = create<HydrationStore>()(
         const { unlockedAchievements } = get();
         if (!unlockedAchievements.includes(id)) {
           set({ unlockedAchievements: [...unlockedAchievements, id] });
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-          let title = "";
-          let body = "";
-          switch (id) {
-            case "first_step":
-              title = "Taking First Step";
-              body = "Logged your first drink";
-              break;
-            case "hydrated_human":
-              title = "Hydrated Human";
-              body = "Hit your daily goal for the first time";
-              break;
-            case "camel":
-              title = "Be a Camel";
-              body = "Completed more than 1 bottle in a day";
-              break;
-            case "consistency":
-              title = "Water Consistence";
-              body = "Achieved a 2-day streak";
-              break;
-          }
-          if (title) sendAchievementUnlocked(title, body);
         }
       },
 
@@ -105,11 +81,12 @@ export const useHydrationStore = create<HydrationStore>()(
           const yesterday = getYesterdayString();
           let newStreak = state.streak;
 
-          if (
-            state.lastGoalMetDate !== yesterday &&
-            state.lastGoalMetDate !== state.lastDate
-          ) {
-            newStreak = 0;
+          // Activity-based streak: increment if last session was yesterday and had logs
+          if (state.lastDate === yesterday && state.logs.length > 0) {
+            newStreak += 1;
+          } else {
+            // Missed a day or no logs last session, reset to Day 1
+            newStreak = 1;
           }
 
           updates.intake = 0;
@@ -122,7 +99,6 @@ export const useHydrationStore = create<HydrationStore>()(
           updates.weeklyVolume = 0;
           updates.lastWeekReset = currentWeek;
         } else if (state.weeklyVolume === 0 && state.intake > 0) {
-          // Sync weekly volume with current daily intake if it was just initialized
           updates.weeklyVolume = state.intake;
         }
 
@@ -137,9 +113,9 @@ export const useHydrationStore = create<HydrationStore>()(
         effectiveGoal = 2000,
         weatherMultiplier = 1.0,
       ) => {
-        const config = BEVERAGES[type] || BEVERAGES.water;
-        const effectiveAmount = amount * config.multiplier;
-
+        const effectiveAmount = calculateEffectiveAmount(amount, type);
+        const today = getTodayString();
+        
         const newLog: HydrationLog = {
           id: Math.random().toString(36).substring(7),
           amount,
@@ -150,7 +126,6 @@ export const useHydrationStore = create<HydrationStore>()(
 
         const currentIntake = get().intake;
         const newIntake = currentIntake + effectiveAmount;
-        const today = getTodayString();
 
         set((state) => ({
           intake: state.intake + effectiveAmount,
@@ -160,44 +135,26 @@ export const useHydrationStore = create<HydrationStore>()(
 
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-        const oldBottleCount = Math.floor(currentIntake / effectiveGoal);
-        const newBottleCount = Math.floor(newIntake / effectiveGoal);
-        const crossedGoal = newBottleCount > oldBottleCount;
-
-        if (crossedGoal) {
-          const state = get();
-          if (state.lastGoalMetDate !== today) {
-            set((s) => ({
-              streak: s.streak + 1,
-              lastGoalMetDate: today,
-            }));
+        if (hasCrossedGoal(currentIntake, newIntake, effectiveGoal)) {
+          if (get().lastGoalMetDate !== today) {
+            set({ lastGoalMetDate: today });
           }
-
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           await sendGoalCelebration();
         }
 
         // --- Achievement Checks ---
-        const { unlockedAchievements, unlockAchievement, streak } = get();
-
-        if (!unlockedAchievements.includes("first_step")) {
-          unlockAchievement("first_step");
-        }
-
-        if (
-          newBottleCount >= 1 &&
-          !unlockedAchievements.includes("hydrated_human")
-        ) {
-          unlockAchievement("hydrated_human");
-        }
-
-        if (newBottleCount >= 9 && !unlockedAchievements.includes("camel")) {
-          unlockAchievement("camel");
-        }
-
-        if (streak >= 2 && !unlockedAchievements.includes("consistency")) {
-          unlockAchievement("consistency");
-        }
+        const state = get();
+        checkAchievements(
+          state.unlockedAchievements,
+          {
+            newIntake,
+            newBottleCount: calculateCompletedBottles(newIntake, effectiveGoal),
+            streak: state.streak,
+            logsCount: state.logs.length,
+          },
+          state.unlockAchievement
+        );
 
         await scheduleSmartReminder(
           newIntake,
@@ -231,3 +188,4 @@ export const useHydrationStore = create<HydrationStore>()(
     },
   ),
 );
+

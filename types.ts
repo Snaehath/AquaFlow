@@ -14,3 +14,17 @@ export type WeatherState = {
   condition: string;
   multiplier: number;
 };
+
+export type UserProfile = {
+  weight: number;
+  activityLevel: 1 | 1.2 | 1.5;
+  gender: "male" | "female" | "other";
+  tempUnit: "C" | "F";
+};
+
+export const DEFAULT_PROFILE: UserProfile = {
+  weight: 70,
+  activityLevel: 1,
+  gender: "other",
+  tempUnit: "F",
+};
