@@ -2,6 +2,7 @@
 import { getCurrentLocation } from "@/services/LocationService";
 import { getWeatherData } from "@/services/WeatherService";
 import { getProfile } from "../services/ProfileService";
+import { rescheduleAllReminders } from "@/services/NotificationService";
 
 // state & types
 import { useHydrationStore } from "@/store/hydrationStore";
@@ -48,20 +49,33 @@ const useHydration = () => {
       const userProfile = await getProfile();
       setProfile(userProfile);
 
-      const location = await getCurrentLocation();
-      if (location) {
-        const weatherData = await getWeatherData(
-          location.latitude,
-          location.longitude,
-        );
-        setWeather({
-          ...weatherData,
-          city: location.city,
+      // Let UI load immediately
+      setIsLoading(false);
+
+      // Run background tasks without awaiting them
+      const reminderInterval = useHydrationStore.getState().reminderInterval;
+      rescheduleAllReminders(reminderInterval || 60).catch((err) => {
+        console.error("Failed to reschedule reminders:", err);
+      });
+
+      getCurrentLocation()
+        .then(async (location) => {
+          if (location) {
+            const weatherData = await getWeatherData(
+              location.latitude,
+              location.longitude,
+            );
+            setWeather({
+              ...weatherData,
+              city: location.city,
+            });
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch location or weather:", err);
         });
-      }
     } catch (e) {
       console.error("Initialization error:", e);
-    } finally {
       setIsLoading(false);
     }
   }, [checkDayReset]);

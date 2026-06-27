@@ -1,7 +1,7 @@
 // libraries
 import * as Haptics from "expo-haptics";
 import { Plus } from "lucide-react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -34,6 +34,7 @@ import WeatherCard from "../components/hydration/WeatherCard";
 import GoalReachedBanner from "../components/hydration/GoalReachedBanner";
 import CustomLogModal from "../components/hydration/CustomLogModal";
 import { useToastStore } from "@/store/toastStore";
+import { Confetti } from "../components/ui/Confetti";
 
 const Dashboard = () => {
   // hydration hook
@@ -60,7 +61,21 @@ const Dashboard = () => {
 
   // local state & refs
   const [showCustomLog, setShowCustomLog] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
+  const prevCompletedBottles = useRef(completedBottles);
+
+  // Trigger Confetti on bottle completion
+  useEffect(() => {
+    if (completedBottles > prevCompletedBottles.current) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 5000);
+      prevCompletedBottles.current = completedBottles;
+      return () => clearTimeout(timer);
+    } else {
+      prevCompletedBottles.current = completedBottles;
+    }
+  }, [completedBottles]);
 
   // Goal reached side effect
   useEffect(() => {
@@ -151,7 +166,7 @@ const Dashboard = () => {
         className="px-6"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 justify-between">
+        <View style={{ flexGrow: 1, justifyContent: "space-between" }}>
           <View>
             <HydrationHeader streak={streak} />
 
@@ -195,6 +210,8 @@ const Dashboard = () => {
         onClose={() => setShowCustomLog(false)}
         onConfirm={(amount) => handleAdd(amount, "water")}
       />
+
+      {showConfetti && <Confetti />}
     </SafeAreaView>
   );
 };

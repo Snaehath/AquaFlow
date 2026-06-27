@@ -19,69 +19,46 @@ const HEAT_MESSAGES = [
   "High temperatures today. Your goal is adjusted for safety. 💧",
 ];
 
-export const scheduleSmartReminder = async (
-  currentIntake?: number,
-  goal?: number,
-  lastLogAmount?: number,
-  weatherMultiplier: number = 1.0,
-  alwaysNotify: boolean = false
-) => {
+export const rescheduleAllReminders = async (intervalMinutes: number) => {
   if (Platform.OS === "web") return;
 
   // 1. Clear previous
   await Notifications.cancelAllScheduledNotificationsAsync();
 
-  // 2. Goal Check - If goal is met, don't schedule a new reminder unless alwaysNotify is on
-  if (!alwaysNotify && currentIntake !== undefined && goal !== undefined && currentIntake >= goal) {
-    console.log("Goal met, silencing reminders.");
-    return;
+  // 2. Schedule daily repeating reminders for waking hours (8 AM to 10 PM)
+  const startHour = 8;
+  const endHour = 22;
+  
+  let currentOffsetMinutes = 0;
+  const totalMinutes = (endHour - startHour) * 60;
+  const promises: Promise<string>[] = [];
+  
+  while (currentOffsetMinutes <= totalMinutes) {
+    const totalMinutesFromStart = startHour * 60 + currentOffsetMinutes;
+    const hour = Math.floor(totalMinutesFromStart / 60);
+    const minute = totalMinutesFromStart % 60;
+
+    const message = REMINDER_MESSAGES[Math.floor(Math.random() * REMINDER_MESSAGES.length)];
+
+    promises.push(
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: "AquaFlow 💧",
+          body: message,
+          sound: true,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour,
+          minute,
+        },
+      })
+    );
+
+    currentOffsetMinutes += intervalMinutes;
   }
 
-  // 3. Adaptive Delay Logic
-  let delayMinutes = 120; // Default 2 hours
-  if (lastLogAmount) {
-    if (lastLogAmount < 200) delayMinutes = 60;        // 1 hour for small sips
-    else if (lastLogAmount > 450) delayMinutes = 180;  // 3 hours for large bottles
-  }
-
-  // If it's hot, remind 25% sooner
-  if (weatherMultiplier > 1.1) {
-    delayMinutes = Math.round(delayMinutes * 0.75);
-  }
-
-  const now = new Date();
-  const scheduledTime = new Date(now.getTime() + delayMinutes * 60 * 1000);
-  const scheduledHour = scheduledTime.getHours();
-
-  // 4. Sleep Check Logic
-  let finalTriggerDate = scheduledTime;
-
-  if (scheduledHour >= SLEEP_START_HOUR || scheduledHour < SLEEP_END_HOUR) {
-    // Move it to morning
-    finalTriggerDate = new Date();
-    if (scheduledHour >= SLEEP_START_HOUR) {
-      finalTriggerDate.setDate(finalTriggerDate.getDate() + 1);
-    }
-    finalTriggerDate.setHours(SLEEP_END_HOUR, Math.floor(Math.random() * 15) + 5, 0, 0);
-  }
-
-  // 5. Select Message
-  const isHot = weatherMultiplier > 1.1;
-  const pool = isHot ? [...HEAT_MESSAGES, ...REMINDER_MESSAGES] : REMINDER_MESSAGES;
-  const message = pool[Math.floor(Math.random() * pool.length)];
-
-  // 6. Schedule via Date trigger
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: isHot ? "Heat Alert ☀️" : "AquaFlow 💧",
-      body: message,
-      sound: true,
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
-      date: finalTriggerDate,
-    },
-  });
+  await Promise.all(promises);
 };
 
 export const cancelAllPending = async () => {

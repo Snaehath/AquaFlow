@@ -1,6 +1,6 @@
 // services & storage
 import {
-  scheduleSmartReminder,
+  rescheduleAllReminders,
   sendGoalCelebration,
 } from "@/services/NotificationService";
 import { mmkvStorage } from "@/services/storage";
@@ -32,6 +32,7 @@ interface HydrationStore {
   weeklyVolume: number;
   lastWeekReset: string;
   alwaysNotify: boolean;
+  reminderInterval: number;
 
   // actions
   addIntake: (
@@ -45,6 +46,7 @@ interface HydrationStore {
   checkDayReset: () => void;
   unlockAchievement: (id: string) => void;
   setAlwaysNotify: (enabled: boolean) => void;
+  setReminderInterval: (minutes: number) => Promise<void>;
 }
 
 // store implementation
@@ -60,8 +62,14 @@ export const useHydrationStore = create<HydrationStore>()(
       weeklyVolume: 0,
       lastWeekReset: getWeekStart(),
       alwaysNotify: false,
+      reminderInterval: 60,
 
       setAlwaysNotify: (enabled: boolean) => set({ alwaysNotify: enabled }),
+
+      setReminderInterval: async (minutes: number) => {
+        set({ reminderInterval: minutes });
+        await rescheduleAllReminders(minutes);
+      },
 
       unlockAchievement: (id: string) => {
         const { unlockedAchievements } = get();
@@ -156,13 +164,6 @@ export const useHydrationStore = create<HydrationStore>()(
           state.unlockAchievement
         );
 
-        await scheduleSmartReminder(
-          newIntake,
-          effectiveGoal,
-          amount,
-          weatherMultiplier,
-          get().alwaysNotify
-        );
       },
 
       removeLog: (id) => {

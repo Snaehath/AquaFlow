@@ -27,20 +27,8 @@ export const checkAchievements = (
     potentialUnlocks.push("hydrated_human");
   }
 
-  if (!unlockedIds.includes("hydro_homie") && logsCount >= 2) {
-    potentialUnlocks.push("hydro_homie");
-  }
-
-  if (!unlockedIds.includes("consistency") && logsCount >= 4) {
-    potentialUnlocks.push("consistency");
-  }
-
   if (!unlockedIds.includes("camel") && newBottleCount >= 3) {
     potentialUnlocks.push("camel");
-  }
-
-  if (!unlockedIds.includes("aquaman") && newIntake >= 1000) {
-    potentialUnlocks.push("aquaman");
   }
 
   potentialUnlocks.forEach((id) => {
