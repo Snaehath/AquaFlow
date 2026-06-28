@@ -1,10 +1,15 @@
 import "@/global.css";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
+import * as SplashScreen from "expo-splash-screen";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { Toast } from "../components/ui/Toast";
+
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* Prevent crash on web/unsupported platforms */
+});
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

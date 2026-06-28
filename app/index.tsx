@@ -22,6 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 // store & hooks
 import { useHydrationStore } from "@/store/hydrationStore";
 import { useHydration } from "../hooks/useHydration";
+import * as SplashScreen from "expo-splash-screen";
 
 // constants & components
 import { BeverageType } from "../constants/beverages";
@@ -64,6 +65,15 @@ const Dashboard = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
   const prevCompletedBottles = useRef(completedBottles);
+
+  // Hide splash screen when loading completes
+  useEffect(() => {
+    if (!isLoading) {
+      SplashScreen.hideAsync().catch(() => {
+        /* Ignore error if splash screen is already hidden */
+      });
+    }
+  }, [isLoading]);
 
   // Trigger Confetti on bottle completion
   useEffect(() => {

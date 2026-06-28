@@ -5,6 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+
     "scheme": "aquaflow",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,10 +20,8 @@
     "android": {
       "package": "com.snaehath.aquaflow",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundImage": "./assets/images/android-icon-background.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
