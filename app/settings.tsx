@@ -8,7 +8,10 @@ import {
   Lock,
   Save,
   Scale,
+  Share2,
+  Smartphone,
   Thermometer,
+  Trash2,
   X,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -19,6 +22,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  Share,
   Text,
   TextInput,
   View,
@@ -37,10 +41,16 @@ const Settings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedAch, setSelectedAch] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  
   const unlockedAchievements = useHydrationStore((s) => s.unlockedAchievements);
   const storeReminderInterval = useHydrationStore((s) => s.reminderInterval);
   const setStoreReminderInterval = useHydrationStore((s) => s.setReminderInterval);
+  const storeHapticsEnabled = useHydrationStore((s) => s.hapticsEnabled);
+  const setStoreHapticsEnabled = useHydrationStore((s) => s.setHapticsEnabled);
+  const clearAllData = useHydrationStore((s) => s.clearAllData);
+
   const [interval, setIntervalState] = useState(60);
+  const [haptics, setHaptics] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -50,21 +60,32 @@ const Settings = () => {
       setActivity(p.activityLevel);
       setTempUnit(p.tempUnit || "F");
       setIntervalState(storeReminderInterval);
+      setHaptics(storeHapticsEnabled);
     };
     load();
-  }, [storeReminderInterval]);
+  }, [storeReminderInterval, storeHapticsEnabled]);
 
   const handleSave = async () => {
     if (!profile) return;
+    const parsedWeight = parseFloat(weight);
+    if (isNaN(parsedWeight) || parsedWeight <= 0 || parsedWeight > 500) {
+      Alert.alert(
+        "Invalid Weight",
+        "Please enter a valid weight between 1 and 500 kg."
+      );
+      return;
+    }
+
     setIsSaving(true);
     const newProfile: UserProfile = {
       ...profile,
-      weight: parseFloat(weight) || 70,
+      weight: parsedWeight,
       activityLevel: activity,
       tempUnit,
     };
     await saveProfile(newProfile);
     await setStoreReminderInterval(interval);
+    setStoreHapticsEnabled(haptics);
     setIsSaving(false);
     Alert.alert("Saved!", "Your profile has been updated.", [
       { text: "OK", onPress: () => router.back() },
@@ -287,6 +308,83 @@ const Settings = () => {
             </View>
           </View>
 
+          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mt-6">
+            <View className="flex-row items-center mb-6">
+              <View className="bg-sky-100 p-3 rounded-2xl mr-4">
+                <Smartphone size={20} color="#0ea5e9" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sky-950 font-bold">System & Care</Text>
+                <Text className="text-sky-500 text-xs">
+                  Manage app preferences and local storage
+                </Text>
+              </View>
+            </View>
+
+            {/* Haptic Feedback Toggle */}
+            <View className="flex-row items-center justify-between py-3 border-b border-sky-50">
+              <Text className="text-sky-900 font-bold text-sm">Haptic Feedback</Text>
+              <Pressable
+                onPress={() => setHaptics(!haptics)}
+                className={`w-12 h-7 rounded-full p-1 ${
+                  haptics ? "bg-sky-500 items-end" : "bg-slate-200 items-start"
+                }`}
+              >
+                <View className="w-5 h-5 bg-white rounded-full shadow-sm" />
+              </Pressable>
+            </View>
+
+            {/* Share App Button */}
+            <Pressable
+              onPress={async () => {
+                try {
+                  await Share.share({
+                    message: "Stay hydrated with AquaFlow! The premium water tracking app. 💧",
+                  });
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              className="flex-row items-center justify-between py-4 border-b border-sky-50 active:opacity-60"
+            >
+              <View className="flex-row items-center">
+                <Share2 size={16} color="#0ea5e9" />
+                <Text className="text-sky-900 font-bold text-sm ml-3">Share AquaFlow</Text>
+              </View>
+              <Text className="text-sky-300 text-xs font-bold">Invite friends</Text>
+            </Pressable>
+
+            {/* Reset/Delete Data Button */}
+            <Pressable
+              onPress={() => {
+                Alert.alert(
+                  "Delete All Local Data?",
+                  "This will permanently erase all your hydration logs, daily streak history, settings, and achievements. This cannot be undone.",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Delete Everything",
+                      style: "destructive",
+                      onPress: () => {
+                        clearAllData();
+                        Alert.alert("Data Wiped", "All local data has been successfully cleared.", [
+                          { text: "OK", onPress: () => router.replace("/") },
+                        ]);
+                      },
+                    },
+                  ]
+                );
+              }}
+              className="flex-row items-center justify-between py-4 active:opacity-60"
+            >
+              <View className="flex-row items-center">
+                <Trash2 size={16} color="#ef4444" />
+                <Text className="text-red-500 font-bold text-sm ml-3">Delete All Data</Text>
+              </View>
+              <Text className="text-red-300 text-xs font-bold">Wipe storage</Text>
+            </Pressable>
+          </View>
+
           <View className="mt-10 p-4 bg-sky-100/30 rounded-2xl border border-dashed border-sky-200">
             <Text className="text-sky-900/60 text-center text-xs leading-5">
               AquaFlow uses the{" "}
@@ -295,6 +393,10 @@ const Settings = () => {
               environmental conditions.
             </Text>
           </View>
+
+          <Text className="text-sky-950/20 text-center text-[10px] font-bold mt-6 mb-4 uppercase tracking-widest">
+            AquaFlow v1.0.0 (Build 1)
+          </Text>
           <View className="h-10" />
         </ScrollView>
       </View>

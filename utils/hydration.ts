@@ -10,14 +10,16 @@ export const calculateEffectiveAmount = (amount: number, type: BeverageType): nu
 
 export const calculateProgress = (intake: number, effectiveGoal: number): number => {
   if (effectiveGoal <= 0) return 0;
-  return intake > 0 && intake % effectiveGoal === 0
+  const roundedIntake = Math.round(intake);
+  const remainder = roundedIntake % effectiveGoal;
+  return roundedIntake > 0 && remainder === 0
     ? 1.0
-    : (intake % effectiveGoal) / effectiveGoal;
+    : remainder / effectiveGoal;
 };
 
 export const calculateCompletedBottles = (intake: number, effectiveGoal: number): number => {
   if (effectiveGoal <= 0) return 0;
-  return Math.floor(intake / effectiveGoal);
+  return Math.floor(Math.round(intake) / effectiveGoal);
 };
 
 export const hasCrossedGoal = (

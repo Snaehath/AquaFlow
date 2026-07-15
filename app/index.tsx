@@ -128,7 +128,9 @@ const Dashboard = () => {
   const handleUndo = useCallback(() => {
     if (logs.length > 0) {
       removeLog(logs[0].id);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      if (useHydrationStore.getState().hapticsEnabled) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      }
     }
   }, [logs, removeLog]);
 
@@ -150,7 +152,9 @@ const Dashboard = () => {
   );
 
   const handleReset = useCallback(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    if (useHydrationStore.getState().hapticsEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
     Alert.alert(
       "Reset today's intake?",
       "This will permanently clear all logs for today. This cannot be undone.",

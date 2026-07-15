@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, Text, Animated } from "react-native";
 import { Thermometer } from "lucide-react-native";
 import { WeatherState, UserProfile } from "@/types";
 
@@ -18,26 +18,52 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ weather, profile }) => {
       : Math.round(weather.temp)
     : "--";
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
   return (
-    <View className="flex-row items-center bg-white/80 px-4 py-3 rounded-3xl mb-2 border border-sky-100 shadow-sm">
+    <Animated.View
+      style={{
+        opacity: fadeAnim,
+        transform: [{ translateY: slideAnim }],
+      }}
+      className="flex-row items-center bg-white/80 px-4 py-3 rounded-3xl mb-2 border border-sky-100 shadow-sm"
+    >
       <View className="flex-1 flex-row items-center">
-        <Thermometer size={20} color={isHeatwave ? "#f59e0b" : "#0ea5e9"} />
-        <View className="ml-3">
-          <Text className="text-sky-900 font-bold text-sm">
-            {weather?.city ?? "Local Environment"}
-          </Text>
-          <Text className="text-sky-500 text-[10px] font-medium">
-            {isHeatwave
-              ? "Increased goal due to heat"
-              : "Standard goal for current weather"}
-          </Text>
+        <View className="flex-1 flex-row items-center">
+          <Thermometer size={20} color={isHeatwave ? "#f59e0b" : "#0ea5e9"} />
+          <View className="ml-3">
+            <Text className="text-sky-900 font-bold text-sm">
+              {weather?.city ?? "Local Environment"}
+            </Text>
+            <Text className="text-sky-500 text-[10px] font-medium">
+              {isHeatwave
+                ? "Increased goal due to heat"
+                : "Standard goal for current weather"}
+            </Text>
+          </View>
         </View>
       </View>
       <Text className="text-sky-950 font-black text-lg">
         {displayTemp}
         {tempUnit}
       </Text>
-    </View>
+    </Animated.View>
   );
 };
 

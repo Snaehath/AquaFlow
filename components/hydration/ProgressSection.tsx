@@ -4,6 +4,8 @@ import { Droplets, Flame } from "lucide-react-native";
 import Animated from "react-native-reanimated";
 import WaterBottle from "../WaterBottle";
 import { BeverageType } from "../../constants/beverages";
+import * as Haptics from "expo-haptics";
+import { useHydrationStore } from "../../store/hydrationStore";
 
 interface ProgressSectionProps {
   progress: number;
@@ -53,6 +55,14 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
 
       <Pressable
         onLongPress={onReset}
+        onPressIn={() => {
+          if (useHydrationStore.getState().hapticsEnabled) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        }}
+        style={({ pressed }) => [
+          { transform: [{ scale: pressed ? 0.94 : 1 }] },
+        ]}
         className="items-center mt-1"
       >
         <Text className="text-sky-950 text-4xl font-black">

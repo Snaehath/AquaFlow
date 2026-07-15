@@ -33,6 +33,7 @@ interface HydrationStore {
   lastWeekReset: string;
   alwaysNotify: boolean;
   reminderInterval: number;
+  hapticsEnabled: boolean;
 
   // actions
   addIntake: (
@@ -47,6 +48,8 @@ interface HydrationStore {
   unlockAchievement: (id: string) => void;
   setAlwaysNotify: (enabled: boolean) => void;
   setReminderInterval: (minutes: number) => Promise<void>;
+  setHapticsEnabled: (enabled: boolean) => void;
+  clearAllData: () => void;
 }
 
 // store implementation
@@ -63,6 +66,7 @@ export const useHydrationStore = create<HydrationStore>()(
       lastWeekReset: getWeekStart(),
       alwaysNotify: false,
       reminderInterval: 60,
+      hapticsEnabled: true,
 
       setAlwaysNotify: (enabled: boolean) => set({ alwaysNotify: enabled }),
 
@@ -70,6 +74,22 @@ export const useHydrationStore = create<HydrationStore>()(
         set({ reminderInterval: minutes });
         await rescheduleAllReminders(minutes);
       },
+
+      setHapticsEnabled: (enabled: boolean) => set({ hapticsEnabled: enabled }),
+
+      clearAllData: () => set({
+        intake: 0,
+        logs: [],
+        lastDate: getTodayString(),
+        streak: 1,
+        lastGoalMetDate: null,
+        unlockedAchievements: [],
+        weeklyVolume: 0,
+        lastWeekReset: getWeekStart(),
+        alwaysNotify: false,
+        reminderInterval: 60,
+        hapticsEnabled: true,
+      }),
 
       unlockAchievement: (id: string) => {
         const { unlockedAchievements } = get();
@@ -141,17 +161,32 @@ export const useHydrationStore = create<HydrationStore>()(
           logs: [newLog, ...state.logs],
         }));
 
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        if (get().hapticsEnabled) {
+          if (type === "water") {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          } else if (type === "coffee") {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setTimeout(() => {
+              if (get().hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }, 80);
+          } else if (type === "electrolyte") {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          } else {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          }
+        }
 
         if (hasCrossedGoal(currentIntake, newIntake, effectiveGoal)) {
           if (get().lastGoalMetDate !== today) {
             set({ lastGoalMetDate: today });
           }
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          if (get().hapticsEnabled) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
           await sendGoalCelebration();
         }
 
-        // --- Achievement Checks ---
+        // Check achievements
         const state = get();
         checkAchievements(
           state.unlockedAchievements,

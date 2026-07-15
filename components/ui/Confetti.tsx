@@ -37,12 +37,13 @@ const ConfettiPiece: React.FC<ConfettiPieceProps> = ({ index }) => {
   const yVal = useSharedValue(-50);
   const xVal = useSharedValue(startX);
   const rotation = useSharedValue(0);
+  const opacity = useSharedValue(1);
 
   useEffect(() => {
     const duration = Math.random() * 2000 + 2500; // 2.5s to 4.5s fall duration
     const delay = Math.random() * 800; // random launch delay
 
-    // Fall animation
+    // Animations
     yVal.value = withDelay(
       delay,
       withTiming(SCREEN_HEIGHT + 50, {
@@ -51,22 +52,13 @@ const ConfettiPiece: React.FC<ConfettiPieceProps> = ({ index }) => {
       })
     );
 
-    // Sway (side to side) animation
-    const swayDistance = Math.random() * 60 + 30; // sway 30-90px
-    xVal.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(startX - swayDistance, { duration: duration / 4 }),
-          withTiming(startX + swayDistance, { duration: duration / 2 }),
-          withTiming(startX, { duration: duration / 4 })
-        ),
-        -1,
-        true
-      )
+    // Fade out
+    opacity.value = withDelay(
+      delay + duration * 0.7,
+      withTiming(0, { duration: duration * 0.3 })
     );
 
-    // Rotation animation
+    // Rotation
     rotation.value = withDelay(
       delay,
       withRepeat(
@@ -85,6 +77,7 @@ const ConfettiPiece: React.FC<ConfettiPieceProps> = ({ index }) => {
         { translateX: xVal.value },
         { rotate: `${rotation.value}deg` },
       ],
+      opacity: opacity.value,
     };
   });
 
