@@ -3,7 +3,6 @@ import { ACHIEVEMENTS_DATA } from "../constants/achievements";
 import { sendAchievementUnlocked } from "./NotificationService";
 import * as Haptics from "expo-haptics";
 import { useToastStore } from "@/store/toastStore";
-import { useHydrationStore } from "@/store/hydrationStore";
 
 // achievement logic
 export const checkAchievements = (
@@ -14,7 +13,8 @@ export const checkAchievements = (
     streak: number;
     logsCount: number;
   },
-  onUnlock: (id: string) => void
+  onUnlock: (id: string) => void,
+  hapticsEnabled: boolean
 ) => {
   const { streak, logsCount, newBottleCount, newIntake } = stats;
 
@@ -36,7 +36,7 @@ export const checkAchievements = (
     const achievement = ACHIEVEMENTS_DATA.find(a => a.id === id);
     if (achievement) {
       onUnlock(id);
-      if (useHydrationStore.getState().hapticsEnabled) {
+      if (hapticsEnabled) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       sendAchievementUnlocked(achievement.title, achievement.description);

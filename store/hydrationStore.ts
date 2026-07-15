@@ -196,7 +196,8 @@ export const useHydrationStore = create<HydrationStore>()(
             streak: state.streak,
             logsCount: state.logs.length,
           },
-          state.unlockAchievement
+          state.unlockAchievement,
+          state.hapticsEnabled
         );
 
       },
