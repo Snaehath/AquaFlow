@@ -1,9 +1,18 @@
-import { BeverageType } from "./constants/beverages";
+export type BeverageType = "water" | "coffee" | "tea" | "juice" | "electrolyte";
+export type ContainerType = "bottle" | "cup" | "glass" | "flask";
+
+export interface BeverageConfig {
+  type: BeverageType;
+  multiplier: number;
+  label: string;
+  color: string;
+  container: ContainerType;
+}
 
 export type HydrationLog = {
   id: string;
-  amount: number; // Nominal amount (ml)
-  effectiveAmount: number; // After multiplier
+  amount: number;
+  effectiveAmount: number;
   type: BeverageType;
   timestamp: number;
 };
@@ -22,9 +31,17 @@ export type UserProfile = {
   tempUnit: "C" | "F";
 };
 
-export const DEFAULT_PROFILE: UserProfile = {
-  weight: 70,
-  activityLevel: 1,
-  gender: "other",
-  tempUnit: "F",
-};
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: any;
+  image?: any;
+}
+
+export interface DailyHistoryEntry {
+  date: string;
+  volume: number;
+}
+
+export { DEFAULT_PROFILE } from "./constants";

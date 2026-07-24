@@ -1,44 +1,30 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-
-const SLEEP_START_HOUR = 22; // 10 PM
-const SLEEP_END_HOUR = 8;    // 8 AM
-
-const REMINDER_MESSAGES = [
-  "Time for a quick sip! Keep your flow going. 💧",
-  "Stay sharp, stay hydrated! 🌊",
-  "Your body will thank you for this water break. ✨",
-  "Hydration is the secret to focus. Take a drink! 🧠",
-  "Is your water bottle empty? Time for a refill! 🍼",
-];
-
-const HEAT_MESSAGES = [
-  "It's hot outside! ☀️ Extra hydration needed today.",
-  "Heatwave alert! 🌡️ Stay cool with some fresh water.",
-  "Don't let the heat get to you. Keep sipping! 🧊",
-  "High temperatures today. Your goal is adjusted for safety. 💧",
-];
+import {
+  WAKING_START_HOUR,
+  WAKING_END_HOUR,
+  REMINDER_MESSAGES,
+  HEAT_MESSAGES,
+} from "../constants";
 
 export const rescheduleAllReminders = async (intervalMinutes: number) => {
   if (Platform.OS === "web") return;
 
-  // 1. Clear previous
+  // 1. Clear previous scheduled notifications
   await Notifications.cancelAllScheduledNotificationsAsync();
 
-  // 2. Schedule daily repeating reminders for waking hours (8 AM to 10 PM)
-  const startHour = 8;
-  const endHour = 22;
-  
+  // 2. Schedule daily repeating reminders for waking hours (WAKING_START_HOUR to WAKING_END_HOUR)
   let currentOffsetMinutes = 0;
-  const totalMinutes = (endHour - startHour) * 60;
+  const totalMinutes = (WAKING_END_HOUR - WAKING_START_HOUR) * 60;
   const promises: Promise<string>[] = [];
-  
+
   while (currentOffsetMinutes <= totalMinutes) {
-    const totalMinutesFromStart = startHour * 60 + currentOffsetMinutes;
+    const totalMinutesFromStart = WAKING_START_HOUR * 60 + currentOffsetMinutes;
     const hour = Math.floor(totalMinutesFromStart / 60);
     const minute = totalMinutesFromStart % 60;
 
-    const message = REMINDER_MESSAGES[Math.floor(Math.random() * REMINDER_MESSAGES.length)];
+    const message =
+      REMINDER_MESSAGES[Math.floor(Math.random() * REMINDER_MESSAGES.length)];
 
     promises.push(
       Notifications.scheduleNotificationAsync({
@@ -59,6 +45,21 @@ export const rescheduleAllReminders = async (intervalMinutes: number) => {
   }
 
   await Promise.all(promises);
+};
+
+export const sendHeatAlertNotification = async () => {
+  if (Platform.OS === "web") return;
+  const heatMessage =
+    HEAT_MESSAGES[Math.floor(Math.random() * HEAT_MESSAGES.length)];
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Heatwave Alert 🌡️",
+      body: heatMessage,
+      sound: true,
+    },
+    trigger: null,
+  });
 };
 
 export const cancelAllPending = async () => {

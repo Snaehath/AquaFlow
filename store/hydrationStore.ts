@@ -21,6 +21,11 @@ import {
   hasCrossedGoal 
 } from "@/utils/hydration";
 
+export interface DailyHistoryEntry {
+  date: string;
+  volume: number;
+}
+
 // store interface
 interface HydrationStore {
   intake: number;
@@ -34,6 +39,7 @@ interface HydrationStore {
   alwaysNotify: boolean;
   reminderInterval: number;
   hapticsEnabled: boolean;
+  weeklyHistory: DailyHistoryEntry[];
 
   // actions
   addIntake: (
@@ -67,6 +73,7 @@ export const useHydrationStore = create<HydrationStore>()(
       alwaysNotify: false,
       reminderInterval: 60,
       hapticsEnabled: true,
+      weeklyHistory: [],
 
       setAlwaysNotify: (enabled: boolean) => set({ alwaysNotify: enabled }),
 
@@ -89,6 +96,7 @@ export const useHydrationStore = create<HydrationStore>()(
         alwaysNotify: false,
         reminderInterval: 60,
         hapticsEnabled: true,
+        weeklyHistory: [],
       }),
 
       unlockAchievement: (id: string) => {
@@ -117,10 +125,20 @@ export const useHydrationStore = create<HydrationStore>()(
             newStreak = 1;
           }
 
+          // Save yesterday's entry to weeklyHistory
+          const yesterdayEntry: DailyHistoryEntry = {
+            date: state.lastDate,
+            volume: state.intake,
+          };
+          const cleanHistory = (state.weeklyHistory || [])
+            .filter((h) => h.date !== state.lastDate);
+          const newHistory = [...cleanHistory, yesterdayEntry].slice(-7);
+
           updates.intake = 0;
           updates.logs = [];
           updates.lastDate = today;
           updates.streak = newStreak;
+          updates.weeklyHistory = newHistory;
         }
 
         if (state.lastWeekReset !== currentWeek) {

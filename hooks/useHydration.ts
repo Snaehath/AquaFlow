@@ -107,6 +107,7 @@ const useHydration = () => {
 
     streak,
     weeklyVolume: Math.round(weeklyVolume),
+    weeklyHistory: useHydrationStore((s) => s.weeklyHistory),
     completedBottles: calculateCompletedBottles(intake, effectiveGoal),
     progress: calculateProgress(intake, effectiveGoal),
     isGoalReached: intake >= effectiveGoal,
