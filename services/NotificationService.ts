@@ -7,6 +7,59 @@ import {
   HEAT_MESSAGES,
 } from "../constants";
 
+export const WATER_REMINDER_CATEGORY = "water-reminder";
+
+export const ACTION_LOG_250 = "LOG_WATER_250";
+export const ACTION_LOG_500 = "LOG_WATER_500";
+export const ACTION_LOG_CUSTOM = "LOG_WATER_CUSTOM";
+
+export const setupNotificationCategories = async () => {
+  if (Platform.OS === "web") return;
+
+  try {
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "Hydration Reminders",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#0ea5e9",
+        sound: "default",
+      });
+    }
+
+    await Notifications.setNotificationCategoryAsync(WATER_REMINDER_CATEGORY, [
+      {
+        identifier: ACTION_LOG_250,
+        buttonTitle: "+250ml 💧",
+        options: {
+          opensAppToForeground: true,
+        },
+      },
+      {
+        identifier: ACTION_LOG_500,
+        buttonTitle: "+500ml 💧",
+        options: {
+          opensAppToForeground: true,
+        },
+      },
+      {
+        identifier: ACTION_LOG_CUSTOM,
+        buttonTitle: "Custom ml",
+        textInput: {
+          submitButtonTitle: "Log",
+          placeholder: "Enter ml (e.g. 350)",
+        },
+        options: {
+          opensAppToForeground: true,
+        },
+      },
+    ]);
+  } catch (error) {
+    console.error("Failed to setup notification categories:", error);
+  }
+};
+
+
 export const rescheduleAllReminders = async (intervalMinutes: number) => {
   if (Platform.OS === "web") return;
 
@@ -31,12 +84,14 @@ export const rescheduleAllReminders = async (intervalMinutes: number) => {
         content: {
           title: "AquaFlow 💧",
           body: message,
-          sound: true,
+          sound: "default",
+          categoryIdentifier: WATER_REMINDER_CATEGORY,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DAILY,
           hour,
           minute,
+          channelId: "default",
         },
       })
     );
@@ -45,6 +100,19 @@ export const rescheduleAllReminders = async (intervalMinutes: number) => {
   }
 
   await Promise.all(promises);
+};
+
+export const sendTestNotificationWithActions = async () => {
+  if (Platform.OS === "web") return;
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Time for Water! 💧",
+      body: "Tap an action button below (+250ml, +500ml, or Custom) to log your intake!",
+      sound: "default",
+      categoryIdentifier: WATER_REMINDER_CATEGORY,
+    },
+    trigger: null,
+  });
 };
 
 export const sendHeatAlertNotification = async () => {
@@ -56,11 +124,13 @@ export const sendHeatAlertNotification = async () => {
     content: {
       title: "Heatwave Alert 🌡️",
       body: heatMessage,
-      sound: true,
+      sound: "default",
+      categoryIdentifier: WATER_REMINDER_CATEGORY,
     },
     trigger: null,
   });
 };
+
 
 export const cancelAllPending = async () => {
   await Notifications.cancelAllScheduledNotificationsAsync();
@@ -89,3 +159,18 @@ export const sendAchievementUnlocked = async (title: string, body: string) => {
     trigger: null,
   });
 };
+
+export const sendQuickLogConfirmation = async (amount: number) => {
+  if (Platform.OS === "web") return;
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Water Logged! 💧",
+      body: `Successfully added ${amount}ml of water.`,
+      sound: "default",
+    },
+    trigger: null,
+  });
+};
+
+
+

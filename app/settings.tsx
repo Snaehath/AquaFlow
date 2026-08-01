@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import {
   Activity,
   Award,
+  Bell,
   ChevronLeft,
   Clock,
   Lock,
@@ -31,8 +32,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ACHIEVEMENTS_DATA } from "../constants/achievements";
 import { getProfile, saveProfile } from "../services/ProfileService";
 import { useHydrationStore } from "../store/hydrationStore";
+import { sendTestNotificationWithActions } from "../services/NotificationService";
 
 const Settings = () => {
+
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [weight, setWeight] = useState("");
@@ -333,6 +336,25 @@ const Settings = () => {
                 <View className="w-5 h-5 bg-white rounded-full shadow-sm" />
               </Pressable>
             </View>
+
+            {/* Test Notification Button */}
+            <Pressable
+              onPress={async () => {
+                await sendTestNotificationWithActions();
+                Alert.alert(
+                  "Notification Sent! 🔔",
+                  "Pull down your phone's notification bar to see the reminder with interactive action buttons (+250ml, +500ml, Custom)."
+                );
+              }}
+              className="flex-row items-center justify-between py-4 border-b border-sky-50 active:opacity-60"
+            >
+              <View className="flex-row items-center">
+                <Bell size={16} color="#0ea5e9" />
+                <Text className="text-sky-900 font-bold text-sm ml-3">Test Action Notification</Text>
+              </View>
+              <Text className="text-sky-500 text-xs font-bold">Send now</Text>
+            </Pressable>
+
 
             {/* Share App Button */}
             <Pressable
