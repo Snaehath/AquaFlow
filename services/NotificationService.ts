@@ -60,46 +60,68 @@ export const setupNotificationCategories = async () => {
 };
 
 
+let isRescheduling = false;
+let pendingInterval: number | null = null;
+
 export const rescheduleAllReminders = async (intervalMinutes: number) => {
   if (Platform.OS === "web") return;
 
-  // 1. Clear previous scheduled notifications
-  await Notifications.cancelAllScheduledNotificationsAsync();
-
-  // 2. Schedule daily repeating reminders for waking hours (WAKING_START_HOUR to WAKING_END_HOUR)
-  let currentOffsetMinutes = 0;
-  const totalMinutes = (WAKING_END_HOUR - WAKING_START_HOUR) * 60;
-  const promises: Promise<string>[] = [];
-
-  while (currentOffsetMinutes <= totalMinutes) {
-    const totalMinutesFromStart = WAKING_START_HOUR * 60 + currentOffsetMinutes;
-    const hour = Math.floor(totalMinutesFromStart / 60);
-    const minute = totalMinutesFromStart % 60;
-
-    const message =
-      REMINDER_MESSAGES[Math.floor(Math.random() * REMINDER_MESSAGES.length)];
-
-    promises.push(
-      Notifications.scheduleNotificationAsync({
-        content: {
-          title: "AquaFlow 💧",
-          body: message,
-          sound: "default",
-          categoryIdentifier: WATER_REMINDER_CATEGORY,
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.DAILY,
-          hour,
-          minute,
-          channelId: "default",
-        },
-      })
-    );
-
-    currentOffsetMinutes += intervalMinutes;
+  if (isRescheduling) {
+    pendingInterval = intervalMinutes;
+    return;
   }
 
-  await Promise.all(promises);
+  isRescheduling = true;
+
+  try {
+    // 1. Clear previous scheduled notifications
+    await Notifications.cancelAllScheduledNotificationsAsync();
+
+    // 2. Schedule daily repeating reminders for waking hours (WAKING_START_HOUR to WAKING_END_HOUR)
+    let currentOffsetMinutes = 0;
+    const totalMinutes = (WAKING_END_HOUR - WAKING_START_HOUR) * 60;
+    const promises: Promise<string>[] = [];
+
+    while (currentOffsetMinutes <= totalMinutes) {
+      const totalMinutesFromStart = WAKING_START_HOUR * 60 + currentOffsetMinutes;
+      const hour = Math.floor(totalMinutesFromStart / 60);
+      const minute = totalMinutesFromStart % 60;
+
+      const message =
+        REMINDER_MESSAGES[Math.floor(Math.random() * REMINDER_MESSAGES.length)];
+
+      promises.push(
+        Notifications.scheduleNotificationAsync({
+          identifier: `aquaflow-daily-reminder-${hour}-${minute}`,
+          content: {
+            title: "AquaFlow 💧",
+            body: message,
+            sound: "default",
+            categoryIdentifier: WATER_REMINDER_CATEGORY,
+          },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DAILY,
+            hour,
+            minute,
+            channelId: "default",
+          },
+        })
+      );
+
+      currentOffsetMinutes += intervalMinutes;
+    }
+
+    await Promise.all(promises);
+  } catch (error) {
+    console.error("Failed to reschedule reminders:", error);
+  } finally {
+    isRescheduling = false;
+    if (pendingInterval !== null) {
+      const nextInterval = pendingInterval;
+      pendingInterval = null;
+      await rescheduleAllReminders(nextInterval);
+    }
+  }
 };
 
 export const sendTestNotificationWithActions = async () => {

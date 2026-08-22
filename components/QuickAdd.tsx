@@ -58,4 +58,5 @@ const QuickAdd = ({ onAdd }: Props) => {
   );
 };
 
-export default QuickAdd;
+export default React.memo(QuickAdd);
+

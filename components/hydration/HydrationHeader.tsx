@@ -72,4 +72,5 @@ const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
   );
 };
 
-export default HydrationHeader;
+export default React.memo(HydrationHeader);
+

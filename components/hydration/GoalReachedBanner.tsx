@@ -25,4 +25,5 @@ const GoalReachedBanner: React.FC = () => {
   );
 };
 
-export default GoalReachedBanner;
+export default React.memo(GoalReachedBanner);
+

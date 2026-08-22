@@ -88,4 +88,5 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
   );
 };
 
-export default ProgressSection;
+export default React.memo(ProgressSection);
+

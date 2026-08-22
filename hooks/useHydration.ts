@@ -2,7 +2,6 @@
 import { getCurrentLocation } from "@/services/LocationService";
 import { getWeatherData } from "@/services/WeatherService";
 import { getProfile } from "../services/ProfileService";
-import { rescheduleAllReminders } from "@/services/NotificationService";
 
 // state & types
 import { useHydrationStore } from "@/store/hydrationStore";
@@ -51,12 +50,6 @@ const useHydration = () => {
 
       // Let UI load immediately
       setIsLoading(false);
-
-      // Run background tasks without awaiting them
-      const reminderInterval = useHydrationStore.getState().reminderInterval;
-      rescheduleAllReminders(reminderInterval || 60).catch((err) => {
-        console.error("Failed to reschedule reminders:", err);
-      });
 
       getCurrentLocation()
         .then(async (location) => {
@@ -108,14 +101,15 @@ const useHydration = () => {
     streak,
     weeklyVolume: Math.round(weeklyVolume),
     weeklyHistory: useHydrationStore((s) => s.weeklyHistory),
-    completedBottles: calculateCompletedBottles(intake, effectiveGoal),
-    progress: calculateProgress(intake, effectiveGoal),
-    isGoalReached: intake >= effectiveGoal,
+    completedBottles: calculateCompletedBottles(Math.round(intake), effectiveGoal),
+    progress: calculateProgress(Math.round(intake), effectiveGoal),
+    isGoalReached: Math.round(intake) >= effectiveGoal,
     lastBeverageType:
       logs.length > 0 ? logs[0].type : ("water" as BeverageType),
     unlockedAchievements: useHydrationStore((s) => s.unlockedAchievements),
   };
 };
+
 
 export { useHydration };
 

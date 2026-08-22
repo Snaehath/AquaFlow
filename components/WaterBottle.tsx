@@ -41,7 +41,23 @@ type Props = {
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
-const WaterBottle = ({ progress, size = 300, beverageType = "water" }: Props) => {
+// Bottle Geometry Constants for viewBox="0 0 100 200"
+const BOTTLE_WIDTH = 100;
+const BOTTLE_HEIGHT = 200;
+
+const BOTTLE_PATH = `
+  M ${BOTTLE_WIDTH * 0.2} ${BOTTLE_HEIGHT * 0.05}
+  C ${BOTTLE_WIDTH * 0.2} ${BOTTLE_HEIGHT * 0.02}, ${BOTTLE_WIDTH * 0.8} ${BOTTLE_HEIGHT * 0.02}, ${BOTTLE_WIDTH * 0.8} ${BOTTLE_HEIGHT * 0.05}
+  L ${BOTTLE_WIDTH * 0.8} ${BOTTLE_HEIGHT * 0.15}
+  C ${BOTTLE_WIDTH * 0.9} ${BOTTLE_HEIGHT * 0.2}, ${BOTTLE_WIDTH * 0.95} ${BOTTLE_HEIGHT * 0.25}, ${BOTTLE_WIDTH * 0.95} ${BOTTLE_HEIGHT * 0.3}
+  L ${BOTTLE_WIDTH * 0.95} ${BOTTLE_HEIGHT * 0.85}
+  C ${BOTTLE_WIDTH * 0.95} ${BOTTLE_HEIGHT * 0.95}, ${BOTTLE_WIDTH * 0.05} ${BOTTLE_HEIGHT * 0.95}, ${BOTTLE_WIDTH * 0.05} ${BOTTLE_HEIGHT * 0.85}
+  L ${BOTTLE_WIDTH * 0.05} ${BOTTLE_HEIGHT * 0.3}
+  C ${BOTTLE_WIDTH * 0.05} ${BOTTLE_HEIGHT * 0.25}, ${BOTTLE_WIDTH * 0.1} ${BOTTLE_HEIGHT * 0.2}, ${BOTTLE_WIDTH * 0.2} ${BOTTLE_HEIGHT * 0.15}
+  Z
+`;
+
+const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: Props) => {
   // Animations
   const waveAnim = useRef(new Animated.Value(0)).current;
   const fillAnim = useRef(new Animated.Value(progress)).current;
@@ -73,11 +89,11 @@ const WaterBottle = ({ progress, size = 300, beverageType = "water" }: Props) =>
       const animate = (timestamp: number) => {
         if (!start) start = timestamp;
         const elapsed = timestamp - start;
-        const progress = Math.min(elapsed / duration, 1);
+        const p = Math.min(elapsed / duration, 1);
         
-        setCurrentColor(interpolateColorJS(startColor, endColor, progress));
+        setCurrentColor(interpolateColorJS(startColor, endColor, p));
 
-        if (progress < 1) {
+        if (p < 1) {
           animationFrameId = requestAnimationFrame(animate);
         }
       };
@@ -171,7 +187,7 @@ const WaterBottle = ({ progress, size = 300, beverageType = "water" }: Props) =>
 
   const translateY = fillAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [185, 40],
+    outputRange: [180, 18],
   });
 
   const translateX = waveAnim.interpolate({
@@ -179,21 +195,6 @@ const WaterBottle = ({ progress, size = 300, beverageType = "water" }: Props) =>
     outputRange: [-100, 0],
   });
 
-  // Bottle Geometry Constants for viewBox="0 0 100 200"
-  const width = 100;
-  const height = 200;
-
-  const bottlePath = `
-  M ${width * 0.2} ${height * 0.05}
-  C ${width * 0.2} ${height * 0.02}, ${width * 0.8} ${height * 0.02}, ${width * 0.8} ${height * 0.05}
-  L ${width * 0.8} ${height * 0.15}
-  C ${width * 0.9} ${height * 0.2}, ${width * 0.95} ${height * 0.25}, ${width * 0.95} ${height * 0.3}
-  L ${width * 0.95} ${height * 0.85}
-  C ${width * 0.95} ${height * 0.95}, ${width * 0.05} ${height * 0.95}, ${width * 0.05} ${height * 0.85}
-  L ${width * 0.05} ${height * 0.3}
-  C ${width * 0.05} ${height * 0.25}, ${width * 0.1} ${height * 0.2}, ${width * 0.2} ${height * 0.15}
-  Z
-`;
   return (
     <Animated.View
       style={{
@@ -212,13 +213,13 @@ const WaterBottle = ({ progress, size = 300, beverageType = "water" }: Props) =>
           </LinearGradient>
 
           <ClipPath id="bottleClip">
-            <Path d={bottlePath} />
+            <Path d={BOTTLE_PATH} />
           </ClipPath>
         </Defs>
 
         {/* 1. Bottle Glass */}
         <Path
-          d={bottlePath}
+          d={BOTTLE_PATH}
           fill="rgba(255, 255, 255, 0.4)"
           stroke="#bae6fd"
           strokeWidth="1.5"
@@ -250,4 +251,5 @@ const WaterBottle = ({ progress, size = 300, beverageType = "water" }: Props) =>
   );
 };
 
-export default WaterBottle;
+export default React.memo(WaterBottleComponent);
+

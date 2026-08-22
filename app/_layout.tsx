@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { Toast } from "../components/ui/Toast";
 import {
   setupNotificationCategories,
+  rescheduleAllReminders,
   ACTION_LOG_250,
   ACTION_LOG_500,
   ACTION_LOG_CUSTOM,
@@ -40,7 +41,11 @@ export default function RootLayout() {
       // 2. Setup Notification Actions Categories
       await setupNotificationCategories();
 
-      // 3. Location Permissions
+      // 3. Reschedule Reminders once on app start
+      const reminderInterval = useHydrationStore.getState().reminderInterval;
+      await rescheduleAllReminders(reminderInterval || 60);
+
+      // 4. Location Permissions
       const { status: locStatus } =
         await Location.requestForegroundPermissionsAsync();
       if (locStatus !== "granted") {

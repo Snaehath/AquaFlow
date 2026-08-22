@@ -67,4 +67,5 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ weather, profile }) => {
   );
 };
 
-export default WeatherCard;
+export default React.memo(WeatherCard);
+
