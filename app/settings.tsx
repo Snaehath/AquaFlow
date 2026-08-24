@@ -538,7 +538,7 @@ const Settings = () => {
                       {selectedAch.description}
                     </Text>
 
-                    <View className="mt-6 w-full">
+                    <View className="mt-6 w-full gap-2">
                       <View
                         className={`flex-row items-center justify-center p-3 rounded-2xl border ${
                           isUnlocked
@@ -554,6 +554,26 @@ const Settings = () => {
                           {isUnlocked ? "Unlocked 🏅" : "Locked 🔒"}
                         </Text>
                       </View>
+
+                      {isUnlocked && (
+                        <Pressable
+                          onPress={async () => {
+                            try {
+                              await Share.share({
+                                message: `I just unlocked the "${selectedAch.title}" badge on AquaFlow! 💧🏅\n${selectedAch.description}\nTrack your hydration with AquaFlow!`,
+                              });
+                            } catch (e) {
+                              console.error(e);
+                            }
+                          }}
+                          className="flex-row items-center justify-center bg-sky-500 active:bg-sky-600 p-3.5 rounded-2xl shadow-xs"
+                        >
+                          <Share2 size={16} color="white" />
+                          <Text className="text-white font-black text-xs ml-2">
+                            Share Achievement
+                          </Text>
+                        </Pressable>
+                      )}
                     </View>
                   </>
                 );

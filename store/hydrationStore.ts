@@ -39,6 +39,7 @@ interface HydrationStore {
   logs: HydrationLog[];
   lastDate: string;
   streak: number;
+  longestStreak: number;
   lastGoalMetDate: string | null;
   unlockedAchievements: string[];
   weeklyVolume: number;
@@ -76,6 +77,7 @@ export const useHydrationStore = create<HydrationStore>()(
       logs: [],
       lastDate: getTodayString(),
       streak: 1,
+      longestStreak: 1,
       lastGoalMetDate: null,
       unlockedAchievements: [],
       weeklyVolume: 0,
@@ -110,6 +112,7 @@ export const useHydrationStore = create<HydrationStore>()(
         logs: [],
         lastDate: getTodayString(),
         streak: 1,
+        longestStreak: 1,
         lastGoalMetDate: null,
         unlockedAchievements: [],
         weeklyVolume: 0,
@@ -147,6 +150,8 @@ export const useHydrationStore = create<HydrationStore>()(
             newStreak = 1;
           }
 
+          const longestStreak = Math.max(state.longestStreak || 1, newStreak);
+
           // Save yesterday's entry to weeklyHistory
           const yesterdayEntry: DailyHistoryEntry = {
             date: state.lastDate,
@@ -160,6 +165,7 @@ export const useHydrationStore = create<HydrationStore>()(
           updates.logs = [];
           updates.lastDate = today;
           updates.streak = newStreak;
+          updates.longestStreak = longestStreak;
           updates.weeklyHistory = newHistory;
         }
 

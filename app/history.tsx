@@ -171,11 +171,16 @@ const History = () => {
       </View>
 
       {/* Weekly Activity Bar Chart */}
-      <View className="px-6 mb-6">
+      <View className="px-6 mb-4">
         <View className="bg-white p-5 rounded-4xl border border-sky-100 shadow-sm">
-          <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest mb-4 ml-1">
-            Weekly Activity
-          </Text>
+          <View className="flex-row justify-between items-center mb-4 px-1">
+            <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest">
+              Weekly Activity
+            </Text>
+            <Text className="text-sky-500 text-[10px] font-black">
+              Avg: {Math.round(weeklyVolume / 7)} ml/day
+            </Text>
+          </View>
           
           <View className="h-28 flex-row justify-between items-end relative px-2 mt-2">
             {/* Target Goal Line */}
@@ -215,6 +220,66 @@ const History = () => {
           </View>
         </View>
       </View>
+
+      {/* Beverage Fluid Distribution Breakdown */}
+      {logs.length > 0 && (
+        <View className="px-6 mb-6">
+          <View className="bg-white p-5 rounded-4xl border border-sky-100 shadow-sm">
+            <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest mb-3 px-1">
+              Today's Fluid Diversity
+            </Text>
+
+            {/* Distribution Stacked Bar */}
+            <View className="h-3 w-full bg-sky-50 rounded-full flex-row overflow-hidden mb-4">
+              {(["water", "coffee", "tea", "juice", "electrolyte"] as BeverageType[]).map((bev) => {
+                const totalRaw = logs.reduce((acc, l) => acc + l.amount, 0);
+                const bVol = logs.filter((l) => l.type === bev).reduce((acc, l) => acc + l.amount, 0);
+                const pct = totalRaw > 0 ? (bVol / totalRaw) * 100 : 0;
+                if (pct <= 0) return null;
+
+                return (
+                  <View
+                    key={bev}
+                    style={{
+                      width: `${pct}%` as DimensionValue,
+                      backgroundColor: BEVERAGES[bev].color,
+                    }}
+                    className="h-full"
+                  />
+                );
+              })}
+            </View>
+
+            {/* Legend Chips */}
+            <View className="flex-row flex-wrap gap-2">
+              {(["water", "coffee", "tea", "juice", "electrolyte"] as BeverageType[]).map((bev) => {
+                const totalRaw = logs.reduce((acc, l) => acc + l.amount, 0);
+                const bVol = logs.filter((l) => l.type === bev).reduce((acc, l) => acc + l.amount, 0);
+                const pct = totalRaw > 0 ? Math.round((bVol / totalRaw) * 100) : 0;
+                if (bVol <= 0) return null;
+
+                const Icon = BEVERAGE_ICONS[bev];
+                const config = BEVERAGES[bev];
+
+                return (
+                  <View
+                    key={bev}
+                    className="flex-row items-center bg-sky-50/80 px-3 py-1.5 rounded-xl border border-sky-100"
+                  >
+                    <View
+                      style={{ backgroundColor: config.color }}
+                      className="w-2 h-2 rounded-full mr-2"
+                    />
+                    <Text className="text-sky-950 font-bold text-xs">
+                      {config.label} <Text className="text-sky-400 text-[10px]">({pct}%)</Text>
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* Timeline Section Title */}
       <View className="flex-row items-center mb-4 ml-7">
