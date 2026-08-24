@@ -1,20 +1,3 @@
-import { UserProfile } from "@/types";
-import { useRouter } from "expo-router";
-import {
-  Activity,
-  Award,
-  Bell,
-  ChevronLeft,
-  Clock,
-  Lock,
-  Save,
-  Scale,
-  Share2,
-  Smartphone,
-  Thermometer,
-  Trash2,
-  X,
-} from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -29,25 +12,47 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import {
+  Activity,
+  Award,
+  ChevronLeft,
+  Lock,
+  Minus,
+  Plus,
+  Save,
+  Share2,
+  Sliders,
+  Smartphone,
+  Trash2,
+  User,
+  X,
+  Zap,
+} from "lucide-react-native";
+
+import { UserProfile } from "@/types";
 import { ACHIEVEMENTS_DATA } from "../constants/achievements";
+import { DEFAULT_PROFILE } from "../constants";
 import { getProfile, saveProfile } from "../services/ProfileService";
 import { useHydrationStore } from "../store/hydrationStore";
-import { sendTestNotificationWithActions } from "../services/NotificationService";
+import { calculateBaseGoal } from "../utils/hydration";
+import { hapticLight, hapticMedium } from "../utils/haptics";
 
 const Settings = () => {
-
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [weight, setWeight] = useState("");
+  const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
+  const [weight, setWeight] = useState("70");
   const [activity, setActivity] = useState<1 | 1.2 | 1.5>(1);
   const [tempUnit, setTempUnit] = useState<"C" | "F">("F");
   const [isSaving, setIsSaving] = useState(false);
   const [selectedAch, setSelectedAch] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   const unlockedAchievements = useHydrationStore((s) => s.unlockedAchievements);
   const storeReminderInterval = useHydrationStore((s) => s.reminderInterval);
-  const setStoreReminderInterval = useHydrationStore((s) => s.setReminderInterval);
+  const setStoreReminderInterval = useHydrationStore(
+    (s) => s.setReminderInterval,
+  );
   const storeHapticsEnabled = useHydrationStore((s) => s.hapticsEnabled);
   const setStoreHapticsEnabled = useHydrationStore((s) => s.setHapticsEnabled);
   const clearAllData = useHydrationStore((s) => s.clearAllData);
@@ -58,31 +63,48 @@ const Settings = () => {
   useEffect(() => {
     const load = async () => {
       const p = await getProfile();
-      setProfile(p);
-      setWeight(p.weight.toString());
-      setActivity(p.activityLevel);
-      setTempUnit(p.tempUnit || "F");
-      setIntervalState(storeReminderInterval);
-      setHaptics(storeHapticsEnabled);
+      if (p) {
+        setProfile(p);
+        setWeight(p.weight ? p.weight.toString() : "70");
+        setActivity(p.activityLevel || 1);
+        setTempUnit(p.tempUnit || "F");
+      }
+      setIntervalState(storeReminderInterval || 60);
+      setHaptics(storeHapticsEnabled ?? true);
     };
     load();
   }, [storeReminderInterval, storeHapticsEnabled]);
 
+  const parsedWeight = parseFloat(weight) || 70;
+  const simulatedGoal = calculateBaseGoal({
+    weight: parsedWeight,
+    activityLevel: activity,
+    gender: profile.gender || "other",
+    tempUnit,
+  });
+
+  const adjustWeight = (delta: number) => {
+    hapticLight();
+    const current = parseFloat(weight) || 70;
+    const next = Math.max(20, Math.min(300, current + delta));
+    setWeight(next.toString());
+  };
+
   const handleSave = async () => {
-    if (!profile) return;
-    const parsedWeight = parseFloat(weight);
-    if (isNaN(parsedWeight) || parsedWeight <= 0 || parsedWeight > 500) {
+    const val = parseFloat(weight);
+    if (isNaN(val) || val <= 10 || val > 500) {
       Alert.alert(
         "Invalid Weight",
-        "Please enter a valid weight between 1 and 500 kg."
+        "Please enter a valid weight between 10 and 500 kg.",
       );
       return;
     }
 
+    hapticMedium();
     setIsSaving(true);
     const newProfile: UserProfile = {
       ...profile,
-      weight: parsedWeight,
+      weight: val,
       activityLevel: activity,
       tempUnit,
     };
@@ -90,396 +112,534 @@ const Settings = () => {
     await setStoreReminderInterval(interval);
     setStoreHapticsEnabled(haptics);
     setIsSaving(false);
-    Alert.alert("Saved!", "Your profile has been updated.", [
+    Alert.alert("Saved! 💧", "Your hydration profile has been updated.", [
       { text: "OK", onPress: () => router.back() },
     ]);
   };
 
-  if (!profile)
-    return (
-      <View className="flex-1 items-center justify-center bg-sky-50">
-        <ActivityIndicator size="large" color="#0ea5e9" />
-      </View>
-    );
-
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-sky-50">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f0f9ff" }}>
+      {/* Top Navigation Bar */}
       <View className="px-6 py-4 flex-row items-center justify-between">
-        <Pressable onPress={() => router.back()} className="p-2 -ml-2">
+        <Pressable
+          onPress={() => {
+            hapticLight();
+            router.back();
+          }}
+          className="p-2 -ml-2 rounded-full"
+        >
           <ChevronLeft color="#082f49" size={24} />
         </Pressable>
         <Text className="text-sky-950 text-xl font-black">Settings</Text>
         <View className="w-10" />
       </View>
 
-      <View style={{ flex: 1 }}>
-        <ScrollView className="px-6 mt-4" showsVerticalScrollIndicator={false}>
-          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm">
-            <View className="flex-row items-center mb-6">
-              <View className="bg-sky-100 p-3 rounded-2xl mr-4">
-                <Scale size={20} color="#0ea5e9" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sky-950 font-bold">Body Weight</Text>
-                <Text className="text-sky-500 text-xs">
-                  Used to calculate base hydration needs
-                </Text>
-              </View>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingTop: 8,
+          paddingBottom: 32,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 1. UNIFIED HYDRATION PROFILE CARD */}
+        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
+          <View className="flex-row items-center mb-5">
+            <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
+              <User size={20} color="#0284c7" />
             </View>
+            <View className="flex-1">
+              <Text className="text-sky-950 font-black text-base">
+                Hydration Profile
+              </Text>
+              <Text className="text-sky-500 text-xs font-medium">
+                Personalized body baseline & activity
+              </Text>
+            </View>
+          </View>
 
-            <View className="flex-row items-center bg-sky-50 p-2 rounded-2xl border border-sky-100">
+          {/* Weight Stepper & Input */}
+          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
+            Body Weight
+          </Text>
+          <View className="flex-row items-center bg-sky-50 p-2 rounded-2xl border border-sky-100 mb-5">
+            <Pressable
+              onPress={() => adjustWeight(-1)}
+              style={({ pressed }) => [
+                { transform: [{ scale: pressed ? 0.9 : 1 }] },
+              ]}
+              className="w-11 h-11 bg-white rounded-xl items-center justify-center border border-sky-100 shadow-sm"
+            >
+              <Minus size={18} color="#0284c7" strokeWidth={2.5} />
+            </Pressable>
+
+            <View className="flex-1 flex-row items-center justify-center px-4">
               <TextInput
                 value={weight}
                 onChangeText={setWeight}
                 keyboardType="numeric"
-                className="flex-1 text-sky-950 font-black text-2xl"
-                placeholder="70"
+                style={{
+                  color: "#082f49",
+                  fontWeight: "900",
+                  fontSize: 24,
+                  textAlign: "center",
+                  padding: 0,
+                  minWidth: 60,
+                }}
+                maxLength={4}
               />
-              <Text className="text-sky-400 font-bold ml-2">kg</Text>
+              <Text className="text-sky-400 font-bold text-base ml-1">kg</Text>
+            </View>
+
+            <Pressable
+              onPress={() => adjustWeight(1)}
+              style={({ pressed }) => [
+                { transform: [{ scale: pressed ? 0.9 : 1 }] },
+              ]}
+              className="w-11 h-11 bg-white rounded-xl items-center justify-center border border-sky-100 shadow-sm"
+            >
+              <Plus size={18} color="#0284c7" strokeWidth={2.5} />
+            </Pressable>
+          </View>
+
+          {/* Activity Level Segmented Selector */}
+          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
+            Daily Energy Level
+          </Text>
+          <View className="flex-row gap-2 mb-5">
+            {[
+              { label: "Sedentary", sub: "1.0x", value: 1 },
+              { label: "Active", sub: "1.2x", value: 1.2 },
+              { label: "Athletic", sub: "1.5x", value: 1.5 },
+            ].map((opt) => {
+              const isSelected = activity === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => {
+                    hapticLight();
+                    setActivity(opt.value as any);
+                  }}
+                  style={{
+                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                  }}
+                  className="flex-1 py-3 px-2 rounded-2xl border items-center shadow-sm"
+                >
+                  <Text
+                    style={{ color: isSelected ? "#ffffff" : "#082f49" }}
+                    className="text-xs font-black"
+                  >
+                    {opt.label}
+                  </Text>
+                  <Text
+                    style={{ color: isSelected ? "#e0f2fe" : "#38bdf8" }}
+                    className="text-[9px] font-bold mt-0.5"
+                  >
+                    {opt.sub}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* Live Calculated Target Preview */}
+          <View className="bg-sky-50 p-3.5 rounded-2xl border border-sky-200/60 flex-row items-center">
+            <Zap size={16} color="#0284c7" />
+            <Text className="text-sky-900 text-xs font-semibold ml-2.5 flex-1">
+              Calculated Base Goal:{" "}
+              <Text className="font-black text-sky-950 text-sm">
+                {simulatedGoal} ml
+              </Text>{" "}
+              / day
+            </Text>
+          </View>
+        </View>
+
+        {/* 2. REMINDERS & PREFERENCES CARD */}
+        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
+          <View className="flex-row items-center mb-5">
+            <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
+              <Sliders size={20} color="#0284c7" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sky-950 font-black text-base">
+                Preferences & Reminders
+              </Text>
+              <Text className="text-sky-500 text-xs font-medium">
+                Schedules and device settings
+              </Text>
             </View>
           </View>
 
-          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mt-6">
-            <View className="flex-row items-center mb-6">
-              <View className="bg-sky-100 p-3 rounded-2xl mr-4">
-                <Activity size={20} color="#0ea5e9" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sky-950 font-bold">Activity Level</Text>
-                <Text className="text-sky-500 text-xs">
-                  Boosts your goal based on energy output
-                </Text>
-              </View>
-            </View>
-
-            <View className="flex-row gap-2">
-              {[
-                { label: "Sedentary", value: 1 },
-                { label: "Active", value: 1.2 },
-                { label: "Athletic", value: 1.5 },
-              ].map((opt) => (
+          {/* Reminder Interval */}
+          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
+            Reminder Frequency (Waking Hours)
+          </Text>
+          <View className="flex-row gap-2 mb-5">
+            {[
+              { label: "30m", value: 30 },
+              { label: "1h", value: 60 },
+              { label: "2h", value: 120 },
+              { label: "3h", value: 180 },
+            ].map((opt) => {
+              const isSelected = interval === opt.value;
+              return (
                 <Pressable
                   key={opt.value}
-                  onPress={() => setActivity(opt.value as any)}
-                  className={`flex-1 p-3 rounded-2xl border items-center ${
-                    activity === opt.value
-                      ? "bg-sky-500 border-sky-500"
-                      : "bg-white border-sky-100"
-                  }`}
+                  onPress={() => {
+                    hapticLight();
+                    setIntervalState(opt.value);
+                  }}
+                  style={{
+                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                  }}
+                  className="flex-1 py-2.5 rounded-2xl border items-center shadow-sm"
                 >
                   <Text
-                    className={`text-[10px] font-bold ${
-                      activity === opt.value ? "text-white" : "text-sky-900"
-                    }`}
+                    style={{ color: isSelected ? "#ffffff" : "#082f49" }}
+                    className="text-xs font-black"
                   >
                     {opt.label}
                   </Text>
                 </Pressable>
-              ))}
-            </View>
+              );
+            })}
           </View>
 
-          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mt-6">
-            <View className="flex-row items-center mb-6">
-              <View className="bg-sky-100 p-3 rounded-2xl mr-4">
-                <Thermometer size={20} color="#0ea5e9" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sky-950 font-bold">Temperature Unit</Text>
-                <Text className="text-sky-500 text-xs">
-                  Used for environmental tracking
-                </Text>
-              </View>
-            </View>
-
-            <View className="flex-row gap-2">
-              {[
-                { label: "Celsius (°C)", value: "C" },
-                { label: "Fahrenheit (°F)", value: "F" },
-              ].map((opt) => (
+          {/* Temperature Unit */}
+          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
+            Temperature Unit
+          </Text>
+          <View className="flex-row gap-2 mb-5">
+            {[
+              { label: "Celsius (°C)", value: "C" },
+              { label: "Fahrenheit (°F)", value: "F" },
+            ].map((opt) => {
+              const isSelected = tempUnit === opt.value;
+              return (
                 <Pressable
                   key={opt.value}
-                  onPress={() => setTempUnit(opt.value as any)}
-                  className={`flex-1 p-3 rounded-2xl border items-center ${
-                    tempUnit === opt.value
-                      ? "bg-sky-500 border-sky-500"
-                      : "bg-white border-sky-100"
-                  }`}
+                  onPress={() => {
+                    hapticLight();
+                    setTempUnit(opt.value as any);
+                  }}
+                  style={{
+                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                  }}
+                  className="flex-1 py-2.5 rounded-2xl border items-center shadow-sm"
                 >
                   <Text
-                    className={`text-[12px] font-bold ${
-                      tempUnit === opt.value ? "text-white" : "text-sky-900"
-                    }`}
+                    style={{ color: isSelected ? "#ffffff" : "#082f49" }}
+                    className="text-xs font-black"
                   >
                     {opt.label}
                   </Text>
                 </Pressable>
-              ))}
+              );
+            })}
+          </View>
+
+          <View className="h-px bg-sky-100 w-full mb-3" />
+
+          {/* Haptic Toggle Switch */}
+          <View className="flex-row items-center justify-between py-1">
+            <View>
+              <Text className="text-sky-950 font-bold text-sm">
+                Tactile Haptics
+              </Text>
+              <Text className="text-sky-400 text-xs">
+                Container weight & celebration pulses
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                hapticMedium();
+                setHaptics(!haptics);
+              }}
+              style={{
+                backgroundColor: haptics ? "#0ea5e9" : "#e2e8f0",
+                justifyContent: "center",
+                alignItems: haptics ? "flex-end" : "flex-start",
+              }}
+              className="w-12 h-7 rounded-full p-1"
+            >
+              <View className="w-5 h-5 bg-white rounded-full shadow-sm" />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* 3. HYDRATION SCIENCE GUIDE */}
+        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
+          <View className="flex-row items-center mb-4">
+            <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
+              <Activity size={20} color="#0284c7" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sky-950 font-black text-base">
+                Hydration Science
+              </Text>
+              <Text className="text-sky-500 text-xs font-medium">
+                Beverage coefficient multipliers
+              </Text>
             </View>
           </View>
 
-          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mt-6">
-            <View className="flex-row items-center mb-6">
-              <View className="bg-sky-100 p-3 rounded-2xl mr-4">
-                <Clock size={20} color="#0ea5e9" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sky-950 font-bold">Reminder Frequency</Text>
-                <Text className="text-sky-500 text-xs">
-                  How often you want to be reminded to drink water
-                </Text>
-              </View>
-            </View>
-
-            <View className="flex-row gap-2">
-              {[
-                { label: "30 Mins", value: 30 },
-                { label: "1 Hour", value: 60 },
-                { label: "2 Hours", value: 120 },
-                { label: "3 Hours", value: 180 },
-              ].map((opt) => (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => setIntervalState(opt.value)}
-                  className={`flex-1 p-3 rounded-2xl border items-center ${
-                    interval === opt.value
-                      ? "bg-sky-500 border-sky-500"
-                      : "bg-white border-sky-100"
-                  }`}
-                >
-                  <Text
-                    className={`text-[11px] font-bold ${
-                      interval === opt.value ? "text-white" : "text-sky-900"
-                    }`}
-                  >
-                    {opt.label}
+          <View className="gap-2">
+            {[
+              {
+                name: "Water",
+                coeff: "100%",
+                desc: "Pure baseline hydration with zero loss",
+                color: "text-sky-600",
+                bg: "bg-sky-50",
+              },
+              {
+                name: "Electrolytes",
+                coeff: "115%",
+                desc: "Enhanced mineral osmolarity & retention",
+                color: "text-cyan-600",
+                bg: "bg-cyan-50",
+              },
+              {
+                name: "Fruit Juice",
+                coeff: "95%",
+                desc: "High water volume with natural carbohydrates",
+                color: "text-orange-600",
+                bg: "bg-orange-50",
+              },
+              {
+                name: "Herbal / Tea",
+                coeff: "92%",
+                desc: "Gentle hydration with natural antioxidants",
+                color: "text-emerald-600",
+                bg: "bg-emerald-50",
+              },
+              {
+                name: "Coffee",
+                coeff: "90%",
+                desc: "Hydrating with mild caffeine diuretic offset",
+                color: "text-amber-600",
+                bg: "bg-amber-50",
+              },
+            ].map((item) => (
+              <View
+                key={item.name}
+                className={`p-3 rounded-2xl ${item.bg} flex-row items-center justify-between`}
+              >
+                <View className="flex-1 pr-2">
+                  <Text className="text-sky-950 font-bold text-xs">
+                    {item.name}
                   </Text>
-                </Pressable>
-              ))}
+                  <Text className="text-sky-500/80 text-[10px]">
+                    {item.desc}
+                  </Text>
+                </View>
+                <Text className={`font-black text-xs ${item.color}`}>
+                  {item.coeff}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* 4. MILESTONES & ACHIEVEMENTS (2x2 Grid for 4 Badges) */}
+        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
+          <View className="flex-row items-center mb-5">
+            <View className="bg-orange-100 p-3 rounded-2xl mr-3.5">
+              <Award size={20} color="#ea580c" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sky-950 font-black text-base">
+                Milestones & Badges
+              </Text>
+              <Text className="text-sky-500 text-xs font-medium">
+                Tap badges to view achievements
+              </Text>
             </View>
           </View>
 
-          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mt-6">
-            <View className="flex-row items-center mb-6">
-              <View className="bg-orange-100 p-3 rounded-2xl mr-4">
-                <Award size={20} color="#f97316" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sky-950 font-bold">Achievements</Text>
-                <Text className="text-sky-500 text-xs">
-                  Tap badges to view details
-                </Text>
-              </View>
-            </View>
-
-            <View className="flex-row flex-wrap gap-2.5 justify-start">
-              {ACHIEVEMENTS_DATA.map((ach) => {
-                const isUnlocked = unlockedAchievements.includes(ach.id);
-                const Icon = ach.icon;
-                return (
-                  <Pressable
-                    key={ach.id}
-                    onPress={() => {
-                      setSelectedAch(ach);
-                      setModalVisible(true);
+          {/* Symmetrical 2x2 Grid */}
+          <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 12 }}>
+            {ACHIEVEMENTS_DATA.map((ach) => {
+              const isUnlocked = unlockedAchievements.includes(ach.id);
+              return (
+                <Pressable
+                  key={ach.id}
+                  onPress={() => {
+                    hapticLight();
+                    setSelectedAch(ach);
+                    setModalVisible(true);
+                  }}
+                  style={({ pressed }) => [
+                    {
+                      width: "48%",
+                      minHeight: 110,
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingVertical: 14,
+                      paddingHorizontal: 8,
+                      borderRadius: 22,
+                      backgroundColor: isUnlocked ? "#f0f9ff" : "#f8fafc",
+                      borderColor: isUnlocked ? "#bae6fd" : "#e2e8f0",
+                      borderWidth: 1,
+                      transform: [{ scale: pressed ? 0.96 : 1 }],
+                    },
+                  ]}
+                >
+                  <View
+                    style={{
+                      width: 52,
+                      height: 52,
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
-                    style={({ pressed }) => [
-                      { transform: [{ scale: pressed ? 0.95 : 1 }] },
-                    ]}
-                    className="w-[30.5%] aspect-square bg-sky-50/60 p-3 rounded-2xl border border-sky-100 mb-1 items-center justify-center shadow-xs"
                   >
                     {isUnlocked ? (
-                      ach.image ? (
-                        <Image
-                          source={ach.image}
-                          style={{ width: 44, height: 44 }}
-                          resizeMode="contain"
-                        />
-                      ) : (
-                        <View className="p-2.5 rounded-full bg-orange-100">
-                          <Icon size={20} color="#f97316" />
-                        </View>
-                      )
+                      <Image
+                        source={ach.image}
+                        style={{ width: 48, height: 48 }}
+                        resizeMode="contain"
+                      />
                     ) : (
-                      <View className="p-2.5 rounded-full bg-slate-200">
-                        <Lock size={20} color="#94a3b8" />
+                      <View
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 22,
+                          backgroundColor: "#f1f5f9",
+                          borderColor: "#cbd5e1",
+                          borderWidth: 1,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Lock size={18} color="#94a3b8" />
                       </View>
                     )}
+                  </View>
+
+                  <View
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "100%",
+                      marginTop: 6,
+                    }}
+                  >
                     <Text
                       numberOfLines={1}
-                      className="text-[9px] font-black text-sky-950 mt-1.5 text-center"
+                      style={{
+                        fontSize: 12,
+                        fontWeight: "900",
+                        color: isUnlocked ? "#082f49" : "#64748b",
+                        textAlign: "center",
+                      }}
                     >
                       {ach.title}
                     </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* Hydration Science Guide */}
-          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mt-6">
-            <View className="flex-row items-center mb-4">
-              <View className="bg-sky-100 p-3 rounded-2xl mr-4">
-                <Activity size={20} color="#0ea5e9" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sky-950 font-bold">Hydration Science</Text>
-                <Text className="text-sky-500 text-xs">
-                  How beverage coefficients work
-                </Text>
-              </View>
-            </View>
-
-            <View className="gap-2">
-              {[
-                { name: "Water", coeff: "100%", desc: "Pure baseline hydration with zero loss", color: "text-sky-600", bg: "bg-sky-50" },
-                { name: "Electrolytes", coeff: "115%", desc: "Enhanced mineral osmolarity & retention", color: "text-cyan-600", bg: "bg-cyan-50" },
-                { name: "Fruit Juice", coeff: "95%", desc: "High water volume with natural carbohydrates", color: "text-orange-600", bg: "bg-orange-50" },
-                { name: "Herbal / Tea", coeff: "92%", desc: "Gentle hydration with natural antioxidants", color: "text-emerald-600", bg: "bg-emerald-50" },
-                { name: "Coffee", coeff: "90%", desc: "Hydrating with mild caffeine diuretic offset", color: "text-amber-600", bg: "bg-amber-50" },
-              ].map((item) => (
-                <View key={item.name} className={`p-3 rounded-2xl ${item.bg} flex-row items-center justify-between`}>
-                  <View className="flex-1 pr-2">
-                    <Text className="text-sky-950 font-bold text-xs">{item.name}</Text>
-                    <Text className="text-sky-500/80 text-[10px]">{item.desc}</Text>
                   </View>
-                  <Text className={`font-black text-xs ${item.color}`}>{item.coeff}</Text>
-                </View>
-              ))}
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* 5. SYSTEM & DATA MANAGEMENT */}
+        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-8">
+          <View className="flex-row items-center mb-4">
+            <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
+              <Smartphone size={20} color="#0284c7" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sky-950 font-black text-base">
+                Data & Privacy
+              </Text>
+              <Text className="text-sky-500 text-xs font-medium">
+                100% offline & stored locally
+              </Text>
             </View>
           </View>
 
-          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mt-6">
-            <View className="flex-row items-center mb-6">
-              <View className="bg-sky-100 p-3 rounded-2xl mr-4">
-                <Smartphone size={20} color="#0ea5e9" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sky-950 font-bold">System & Care</Text>
-                <Text className="text-sky-500 text-xs">
-                  Manage app preferences and local storage
-                </Text>
-              </View>
+          {/* Share App Button */}
+          <Pressable
+            onPress={async () => {
+              try {
+                await Share.share({
+                  message:
+                    "Stay hydrated with AquaFlow! The premium water tracking app. 💧",
+                });
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            className="flex-row items-center justify-between py-3.5 border-b border-sky-50 active:opacity-60"
+          >
+            <View className="flex-row items-center">
+              <Share2 size={16} color="#0284c7" />
+              <Text className="text-sky-900 font-bold text-sm ml-2.5">
+                Share AquaFlow
+              </Text>
             </View>
+            <Text className="text-sky-400 text-xs font-bold">Invite</Text>
+          </Pressable>
 
-            {/* Haptic Feedback Toggle */}
-            <View className="flex-row items-center justify-between py-3 border-b border-sky-50">
-              <Text className="text-sky-900 font-bold text-sm">Haptic Feedback</Text>
-              <Pressable
-                onPress={() => setHaptics(!haptics)}
-                className={`w-12 h-7 rounded-full p-1 ${
-                  haptics ? "bg-sky-500 items-end" : "bg-slate-200 items-start"
-                }`}
-              >
-                <View className="w-5 h-5 bg-white rounded-full shadow-sm" />
-              </Pressable>
-            </View>
-
-            {/* Test Notification Button */}
-            <Pressable
-              onPress={async () => {
-                await sendTestNotificationWithActions();
-                Alert.alert(
-                  "Notification Sent! 🔔",
-                  "Pull down your phone's notification bar to see the reminder with interactive action buttons (+250ml, +500ml, Custom)."
-                );
-              }}
-              className="flex-row items-center justify-between py-4 border-b border-sky-50 active:opacity-60"
-            >
-              <View className="flex-row items-center">
-                <Bell size={16} color="#0ea5e9" />
-                <Text className="text-sky-900 font-bold text-sm ml-3">Test Action Notification</Text>
-              </View>
-              <Text className="text-sky-500 text-xs font-bold">Send now</Text>
-            </Pressable>
-
-
-            {/* Share App Button */}
-            <Pressable
-              onPress={async () => {
-                try {
-                  await Share.share({
-                    message: "Stay hydrated with AquaFlow! The premium water tracking app. 💧",
-                  });
-                } catch (e) {
-                  console.error(e);
-                }
-              }}
-              className="flex-row items-center justify-between py-4 border-b border-sky-50 active:opacity-60"
-            >
-              <View className="flex-row items-center">
-                <Share2 size={16} color="#0ea5e9" />
-                <Text className="text-sky-900 font-bold text-sm ml-3">Share AquaFlow</Text>
-              </View>
-              <Text className="text-sky-300 text-xs font-bold">Invite friends</Text>
-            </Pressable>
-
-            {/* Reset/Delete Data Button */}
-            <Pressable
-              onPress={() => {
-                Alert.alert(
-                  "Delete All Local Data?",
-                  "This will permanently erase all your hydration logs, daily streak history, settings, and achievements. This cannot be undone.",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    {
-                      text: "Delete Everything",
-                      style: "destructive",
-                      onPress: () => {
-                        clearAllData();
-                        Alert.alert("Data Wiped", "All local data has been successfully cleared.", [
-                          { text: "OK", onPress: () => router.replace("/") },
-                        ]);
-                      },
+          {/* Wipe Data Button */}
+          <Pressable
+            onPress={() => {
+              Alert.alert(
+                "Delete All Local Data?",
+                "This will permanently erase all your hydration logs, daily streak history, settings, and achievements.",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Delete Everything",
+                    style: "destructive",
+                    onPress: () => {
+                      clearAllData();
+                      Alert.alert(
+                        "Data Wiped",
+                        "All local data has been successfully cleared.",
+                        [{ text: "OK", onPress: () => router.replace("/") }],
+                      );
                     },
-                  ]
-                );
-              }}
-              className="flex-row items-center justify-between py-4 active:opacity-60"
-            >
-              <View className="flex-row items-center">
-                <Trash2 size={16} color="#ef4444" />
-                <Text className="text-red-500 font-bold text-sm ml-3">Delete All Data</Text>
-              </View>
-              <Text className="text-red-300 text-xs font-bold">Wipe storage</Text>
-            </Pressable>
-          </View>
+                  },
+                ],
+              );
+            }}
+            className="flex-row items-center justify-between py-3.5 active:opacity-60"
+          >
+            <View className="flex-row items-center">
+              <Trash2 size={16} color="#ef4444" />
+              <Text className="text-red-500 font-bold text-sm ml-2.5">
+                Erase All Data
+              </Text>
+            </View>
+            <Text className="text-red-400 text-xs font-bold">Reset</Text>
+          </Pressable>
+        </View>
 
-          <View className="mt-10 p-4 bg-sky-100/30 rounded-2xl border border-dashed border-sky-200">
-            <Text className="text-sky-900/60 text-center text-xs leading-5">
-              AquaFlow uses the{" "}
-              <Text className="font-bold text-sky-900">33ml per kg</Text>{" "}
-              standard formula, adjusted for your activity level and
-              environmental conditions.
-            </Text>
-          </View>
-
-          <Text className="text-sky-950/20 text-center text-[10px] font-bold mt-6 mb-4 uppercase tracking-widest">
-            AquaFlow v1.0.0 (Build 1)
-          </Text>
-          <View className="h-10" />
-        </ScrollView>
-      </View>
-
-      <View className="p-6">
+        {/* Save Button */}
         <Pressable
           onPress={handleSave}
           disabled={isSaving}
-          className="bg-sky-500 p-5 rounded-3xl flex-row items-center justify-center shadow-lg"
+          className="bg-sky-500 active:bg-sky-600 p-4 rounded-2xl flex-row items-center justify-center shadow-md mb-8"
         >
           {isSaving ? (
             <ActivityIndicator color="white" />
           ) : (
             <>
-              <Save color="white" size={20} />
-              <Text className="text-white font-black text-lg ml-2">
-                Save Profile
+              <Save color="white" size={18} />
+              <Text className="text-white font-black text-base ml-2">
+                Save Changes
               </Text>
             </>
           )}
         </Pressable>
-      </View>
+      </ScrollView>
 
       {/* Achievement Details Modal */}
       <Modal
@@ -506,26 +666,19 @@ const Settings = () => {
                 const isUnlocked = unlockedAchievements.includes(
                   selectedAch.id,
                 );
-                const Icon = selectedAch.icon;
 
                 return (
                   <>
                     <View className="my-4 items-center">
                       {isUnlocked ? (
-                        selectedAch.image ? (
-                          <Image
-                            source={selectedAch.image}
-                            style={{ width: 90, height: 90 }}
-                            resizeMode="contain"
-                          />
-                        ) : (
-                          <View className="p-5 rounded-full bg-orange-100">
-                            <Icon size={40} color="#f97316" />
-                          </View>
-                        )
+                        <Image
+                          source={selectedAch.image}
+                          style={{ width: 90, height: 90 }}
+                          resizeMode="contain"
+                        />
                       ) : (
-                        <View className="p-5 rounded-full bg-slate-200">
-                          <Lock size={40} color="#94a3b8" />
+                        <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center border border-slate-200">
+                          <Lock size={36} color="#94a3b8" />
                         </View>
                       )}
                     </View>
@@ -566,7 +719,7 @@ const Settings = () => {
                               console.error(e);
                             }
                           }}
-                          className="flex-row items-center justify-center bg-sky-500 active:bg-sky-600 p-3.5 rounded-2xl shadow-xs"
+                          className="flex-row items-center justify-center bg-sky-500 active:bg-sky-600 p-3.5 rounded-2xl shadow-sm"
                         >
                           <Share2 size={16} color="white" />
                           <Text className="text-white font-black text-xs ml-2">

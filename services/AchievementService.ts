@@ -32,10 +32,6 @@ export const checkAchievements = (
     potentialUnlocks.push("streak_3");
   }
 
-  if (!unlockedIds.includes("streak_7") && streak >= 7) {
-    potentialUnlocks.push("streak_7");
-  }
-
   if (!unlockedIds.includes("camel") && newBottleCount >= 3) {
     potentialUnlocks.push("camel");
   }

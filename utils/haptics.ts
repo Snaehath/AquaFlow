@@ -1,9 +1,14 @@
 import * as Haptics from "expo-haptics";
 import { BeverageType } from "../types";
-import { useHydrationStore } from "../store/hydrationStore";
+
+let globalHapticsEnabled = true;
+
+export const setGlobalHapticsEnabled = (enabled: boolean) => {
+  globalHapticsEnabled = enabled;
+};
 
 const isHapticsEnabled = (): boolean => {
-  return useHydrationStore.getState().hapticsEnabled;
+  return globalHapticsEnabled;
 };
 
 /**

@@ -19,7 +19,7 @@ import {
   calculateCompletedBottles, 
   hasCrossedGoal 
 } from "@/utils/hydration";
-import { hapticBeverage, hapticCelebration } from "@/utils/haptics";
+import { hapticBeverage, hapticCelebration, setGlobalHapticsEnabled } from "@/utils/haptics";
 
 export const DEFAULT_QUICK_PRESETS: QuickPreset[] = [
   { id: "preset_1", label: "Glass", amount: 250, type: "water" },
@@ -95,7 +95,10 @@ export const useHydrationStore = create<HydrationStore>()(
         await rescheduleAllReminders(minutes);
       },
 
-      setHapticsEnabled: (enabled: boolean) => set({ hapticsEnabled: enabled }),
+      setHapticsEnabled: (enabled: boolean) => {
+        setGlobalHapticsEnabled(enabled);
+        set({ hapticsEnabled: enabled });
+      },
 
       updateQuickPreset: (index: number, preset: QuickPreset) => {
         const presets = [...(get().quickPresets || DEFAULT_QUICK_PRESETS)];

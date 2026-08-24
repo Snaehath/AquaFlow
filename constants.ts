@@ -77,7 +77,7 @@ export const BEVERAGES: Record<BeverageType, BeverageConfig> = {
   },
 };
 
-// Achievement Badges (Top 5 Milestone System)
+// Achievement Badges (Core 4 Milestone System)
 export const ACHIEVEMENTS_DATA: Achievement[] = [
   {
     id: "first_step",
@@ -99,13 +99,6 @@ export const ACHIEVEMENTS_DATA: Achievement[] = [
     description: "Maintain a 3-day hydration streak.",
     icon: Flame,
     image: require("./assets/badges/consistency.png"),
-  },
-  {
-    id: "streak_7",
-    title: "Week Warrior",
-    description: "Maintain a 7-day hydration streak.",
-    icon: Shield,
-    image: require("./assets/badges/hydro_homie.webp"),
   },
   {
     id: "camel",
