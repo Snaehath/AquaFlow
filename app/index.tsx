@@ -222,7 +222,7 @@ const Dashboard = () => {
       <CustomLogModal
         visible={showCustomLog}
         onClose={() => setShowCustomLog(false)}
-        onConfirm={(amount) => handleAdd(amount, "water")}
+        onConfirm={(amount, type) => handleAdd(amount, type)}
       />
 
       {showConfetti && <Confetti />}

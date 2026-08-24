@@ -39,6 +39,13 @@ export interface Achievement {
   image?: any;
 }
 
+export interface QuickPreset {
+  id: string;
+  label: string;
+  amount: number;
+  type: BeverageType;
+}
+
 export interface DailyHistoryEntry {
   date: string;
   volume: number;

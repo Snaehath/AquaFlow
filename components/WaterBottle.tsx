@@ -13,7 +13,7 @@ import Svg, {
 const interpolateColorJS = (color1: string, color2: string, factor: number) => {
   const c1 = color1.startsWith("#") ? color1 : "#38bdf8";
   const c2 = color2.startsWith("#") ? color2 : "#38bdf8";
-  
+
   const r1 = parseInt(c1.substring(1, 3), 16);
   const g1 = parseInt(c1.substring(3, 5), 16);
   const b1 = parseInt(c1.substring(5, 7), 16);
@@ -26,9 +26,9 @@ const interpolateColorJS = (color1: string, color2: string, factor: number) => {
   const g = Math.round(g1 + (g2 - g1) * factor);
   const b = Math.round(b1 + (b2 - b1) * factor);
 
-  const rh = r.toString(16).padStart(2, '0');
-  const gh = g.toString(16).padStart(2, '0');
-  const bh = b.toString(16).padStart(2, '0');
+  const rh = r.toString(16).padStart(2, "0");
+  const gh = g.toString(16).padStart(2, "0");
+  const bh = b.toString(16).padStart(2, "0");
 
   return `#${rh}${gh}${bh}`;
 };
@@ -46,20 +46,25 @@ const BOTTLE_WIDTH = 100;
 const BOTTLE_HEIGHT = 200;
 
 const BOTTLE_PATH = `
-  M ${BOTTLE_WIDTH * 0.2} ${BOTTLE_HEIGHT * 0.05}
-  C ${BOTTLE_WIDTH * 0.2} ${BOTTLE_HEIGHT * 0.02}, ${BOTTLE_WIDTH * 0.8} ${BOTTLE_HEIGHT * 0.02}, ${BOTTLE_WIDTH * 0.8} ${BOTTLE_HEIGHT * 0.05}
-  L ${BOTTLE_WIDTH * 0.8} ${BOTTLE_HEIGHT * 0.15}
-  C ${BOTTLE_WIDTH * 0.9} ${BOTTLE_HEIGHT * 0.2}, ${BOTTLE_WIDTH * 0.95} ${BOTTLE_HEIGHT * 0.25}, ${BOTTLE_WIDTH * 0.95} ${BOTTLE_HEIGHT * 0.3}
-  L ${BOTTLE_WIDTH * 0.95} ${BOTTLE_HEIGHT * 0.85}
-  C ${BOTTLE_WIDTH * 0.95} ${BOTTLE_HEIGHT * 0.95}, ${BOTTLE_WIDTH * 0.05} ${BOTTLE_HEIGHT * 0.95}, ${BOTTLE_WIDTH * 0.05} ${BOTTLE_HEIGHT * 0.85}
-  L ${BOTTLE_WIDTH * 0.05} ${BOTTLE_HEIGHT * 0.3}
-  C ${BOTTLE_WIDTH * 0.05} ${BOTTLE_HEIGHT * 0.25}, ${BOTTLE_WIDTH * 0.1} ${BOTTLE_HEIGHT * 0.2}, ${BOTTLE_WIDTH * 0.2} ${BOTTLE_HEIGHT * 0.15}
+  M ${BOTTLE_WIDTH * 0.22} ${BOTTLE_HEIGHT * 0.05}
+  C ${BOTTLE_WIDTH * 0.22} ${BOTTLE_HEIGHT * 0.02}, ${BOTTLE_WIDTH * 0.78} ${BOTTLE_HEIGHT * 0.02}, ${BOTTLE_WIDTH * 0.78} ${BOTTLE_HEIGHT * 0.05}
+  L ${BOTTLE_WIDTH * 0.78} ${BOTTLE_HEIGHT * 0.14}
+  C ${BOTTLE_WIDTH * 0.9} ${BOTTLE_HEIGHT * 0.19}, ${BOTTLE_WIDTH * 0.94} ${BOTTLE_HEIGHT * 0.24}, ${BOTTLE_WIDTH * 0.94} ${BOTTLE_HEIGHT * 0.3}
+  L ${BOTTLE_WIDTH * 0.94} ${BOTTLE_HEIGHT * 0.86}
+  C ${BOTTLE_WIDTH * 0.94} ${BOTTLE_HEIGHT * 0.96}, ${BOTTLE_WIDTH * 0.06} ${BOTTLE_HEIGHT * 0.96}, ${BOTTLE_WIDTH * 0.06} ${BOTTLE_HEIGHT * 0.86}
+  L ${BOTTLE_WIDTH * 0.06} ${BOTTLE_HEIGHT * 0.3}
+  C ${BOTTLE_WIDTH * 0.06} ${BOTTLE_HEIGHT * 0.24}, ${BOTTLE_WIDTH * 0.1} ${BOTTLE_HEIGHT * 0.19}, ${BOTTLE_WIDTH * 0.22} ${BOTTLE_HEIGHT * 0.14}
   Z
 `;
 
-const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: Props) => {
-  // Animations
-  const waveAnim = useRef(new Animated.Value(0)).current;
+const WaterBottleComponent = ({
+  progress,
+  size = 300,
+  beverageType = "water",
+}: Props) => {
+  // Dual-Wave Animations
+  const waveAnimPrimary = useRef(new Animated.Value(0)).current;
+  const waveAnimSecondary = useRef(new Animated.Value(0)).current;
   const fillAnim = useRef(new Animated.Value(progress)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -74,7 +79,7 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
   const [currentColor, setCurrentColor] = useState(liquidColor);
   const prevColorRef = useRef(liquidColor);
 
-  // Effects
+  // Effects: Liquid Color Morphing
   useEffect(() => {
     if (liquidColor !== prevColorRef.current) {
       const startColor = prevColorRef.current;
@@ -82,7 +87,7 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
       prevColorRef.current = liquidColor;
 
       let start: number | null = null;
-      const duration = 400; // 400ms
+      const duration = 400;
 
       let animationFrameId: number;
 
@@ -90,7 +95,7 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
         if (!start) start = timestamp;
         const elapsed = timestamp - start;
         const p = Math.min(elapsed / duration, 1);
-        
+
         setCurrentColor(interpolateColorJS(startColor, endColor, p));
 
         if (p < 1) {
@@ -106,48 +111,59 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
     }
   }, [liquidColor]);
 
+  // Effects: Continuous Dual Wave Physics
   useEffect(() => {
-    // Loop the idle wave
+    // Primary foreground wave loop
     Animated.loop(
-      Animated.timing(waveAnim, {
+      Animated.timing(waveAnimPrimary, {
         toValue: 1,
-        duration: 3500,
+        duration: 3000,
         easing: Easing.linear,
         useNativeDriver: false,
       }),
     ).start();
-  }, [waveAnim]);
 
+    // Secondary background wave loop (different tempo & reverse crest)
+    Animated.loop(
+      Animated.timing(waveAnimSecondary, {
+        toValue: 1,
+        duration: 4600,
+        easing: Easing.linear,
+        useNativeDriver: false,
+      }),
+    ).start();
+  }, [waveAnimPrimary, waveAnimSecondary]);
+
+  // Effects: Dynamic Fill Transition & Impact Spring
   useEffect(() => {
     const prevProgress = prevProgressRef.current;
     prevProgressRef.current = progress;
 
-    // Detect bottle completion overflow
-    const isOverflow = prevProgress > 0 && progress < prevProgress && progress !== 0;
+    const isOverflow =
+      prevProgress > 0 && progress < prevProgress && progress !== 0;
 
     if (isOverflow) {
-      // Animation sequence: fill to top, hold, then fall to new level
+      // Bottle completion sequence
       Animated.sequence([
         Animated.timing(fillAnim, {
           toValue: 1.0,
-          duration: 600,
+          duration: 500,
           easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }),
-        Animated.delay(1000),
+        Animated.delay(900),
         Animated.timing(fillAnim, {
           toValue: progress,
-          duration: 800,
+          duration: 700,
           easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }),
       ]).start();
 
-      // Trigger the "Impact" pulse
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.08,
-          duration: 150,
+          toValue: 1.1,
+          duration: 160,
           useNativeDriver: true,
         }),
         Animated.spring(pulseAnim, {
@@ -158,26 +174,23 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
         }),
       ]).start();
     } else {
-      // Standard animation
       Animated.parallel([
-        // Animate the fill level
         Animated.timing(fillAnim, {
           toValue: progress,
-          duration: 1200,
+          duration: 1100,
           easing: Easing.out(Easing.exp),
           useNativeDriver: false,
         }),
-        // Trigger the "Impact" pulse
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 1.08,
-            duration: 150,
+            toValue: 1.06,
+            duration: 140,
             useNativeDriver: true,
           }),
           Animated.spring(pulseAnim, {
             toValue: 1,
             friction: 4,
-            tension: 40,
+            tension: 45,
             useNativeDriver: true,
           }),
         ]),
@@ -187,12 +200,17 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
 
   const translateY = fillAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [180, 18],
+    outputRange: [180, 16],
   });
 
-  const translateX = waveAnim.interpolate({
+  const translateXPrimary = waveAnimPrimary.interpolate({
     inputRange: [0, 1],
     outputRange: [-100, 0],
+  });
+
+  const translateXSecondary = waveAnimSecondary.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -100],
   });
 
   return (
@@ -207,9 +225,24 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
     >
       <Svg width={size} height={size} viewBox="0 0 100 200">
         <Defs>
-          <LinearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={currentColor} stopOpacity="0.8" />
+          {/* Main Fluid Gradient */}
+          <LinearGradient id="waterGradFront" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={currentColor} stopOpacity="0.9" />
+            <Stop offset="0.7" stopColor={currentColor} stopOpacity="1" />
             <Stop offset="1" stopColor={currentColor} stopOpacity="1" />
+          </LinearGradient>
+
+          {/* Secondary Back Wave Gradient (Depth layer) */}
+          <LinearGradient id="waterGradBack" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={currentColor} stopOpacity="0.45" />
+            <Stop offset="1" stopColor={currentColor} stopOpacity="0.7" />
+          </LinearGradient>
+
+          {/* Glass Specular Highlights */}
+          <LinearGradient id="glassReflection" x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor="#ffffff" stopOpacity="0.4" />
+            <Stop offset="0.5" stopColor="#ffffff" stopOpacity="0.05" />
+            <Stop offset="1" stopColor="#ffffff" stopOpacity="0.2" />
           </LinearGradient>
 
           <ClipPath id="bottleClip">
@@ -217,34 +250,65 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
           </ClipPath>
         </Defs>
 
-        {/* 1. Bottle Glass */}
+        {/* 1. Bottle Glass Outer Shell */}
         <Path
           d={BOTTLE_PATH}
-          fill="rgba(255, 255, 255, 0.4)"
+          fill="rgba(240, 249, 255, 0.45)"
           stroke="#bae6fd"
-          strokeWidth="1.5"
+          strokeWidth="1.8"
         />
 
-        {/* 2. Liquid Flow */}
+        {/* 2. Etched Measurement Ticks (Left Edge) */}
+        <Path
+          d="M 12 140 H 18 M 12 100 H 22 M 12 60 H 18"
+          stroke="#7dd3fc"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          opacity="0.5"
+        />
+
+        {/* 3. Multi-Layer Liquid Flow */}
         <G clipPath="url(#bottleClip)">
-          <AnimatedG
-            y={translateY}
-            x={translateX}
-          >
+          {/* Layer A: Back/Secondary Wave (Depth Layer) */}
+          <AnimatedG y={translateY} x={translateXSecondary}>
+            <Path
+              d="M0 12 Q25 22 50 12 T100 12 T150 12 T200 12 V300 H0 Z"
+              fill="url(#waterGradBack)"
+            />
+          </AnimatedG>
+
+          {/* Layer B: Front/Primary Wave (Rich Fluid Surface) */}
+          <AnimatedG y={translateY} x={translateXPrimary}>
             <Path
               d="M0 10 Q25 0 50 10 T100 10 T150 10 T200 10 V300 H0 Z"
-              fill="url(#waterGrad)"
+              fill="url(#waterGradFront)"
             />
           </AnimatedG>
         </G>
 
-        {/* 3. Shine Highlights */}
+        {/* 4. Glass Reflection & Sheen Overlays */}
         <Path
-          d="M82 70 V150"
+          d="M80 65 V150"
           stroke="white"
-          strokeWidth="3.5"
+          strokeWidth="3.2"
           strokeLinecap="round"
-          opacity="0.25"
+          opacity="0.35"
+        />
+        <Path
+          d="M20 75 V140"
+          stroke="white"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          opacity="0.2"
+        />
+
+        {/* 5. Bottle Cap / Rim Accent */}
+        <Path
+          d={`M ${BOTTLE_WIDTH * 0.28} ${BOTTLE_HEIGHT * 0.03} H ${BOTTLE_WIDTH * 0.72}`}
+          stroke="#38bdf8"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          opacity="0.6"
         />
       </Svg>
     </Animated.View>
@@ -252,4 +316,5 @@ const WaterBottleComponent = ({ progress, size = 300, beverageType = "water" }: 
 };
 
 export default React.memo(WaterBottleComponent);
+
 

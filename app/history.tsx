@@ -4,7 +4,9 @@ import {
   ChevronLeft,
   Coffee,
   Droplets,
+  GlassWater,
   History as HistoryIcon,
+  Sparkles,
   Trash2,
   Zap,
 } from "lucide-react-native";
@@ -13,7 +15,8 @@ import { DimensionValue, FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BEVERAGES } from "../constants/beverages";
 import { useHydration } from "../hooks/useHydration";
-import { HydrationLog } from "../types";
+import { HydrationLog, BeverageType } from "../types";
+import { hapticLight } from "../utils/haptics";
 
 // Helper to calculate days from Monday to Sunday of the current week
 const getWeeklyDays = () => {
@@ -37,6 +40,14 @@ const getWeeklyDays = () => {
     });
   }
   return days;
+};
+
+const BEVERAGE_ICONS: Record<BeverageType, React.ElementType> = {
+  water: Droplets,
+  coffee: Coffee,
+  tea: GlassWater,
+  juice: Sparkles,
+  electrolyte: Zap,
 };
 
 const History = () => {
@@ -64,6 +75,8 @@ const History = () => {
 
   const renderLogItem = ({ item }: { item: HydrationLog }) => {
     const beverage = BEVERAGES[item.type] || BEVERAGES.water;
+    const IconComponent = BEVERAGE_ICONS[item.type] || Droplets;
+    const isDifferent = item.effectiveAmount !== item.amount;
     const time = new Date(item.timestamp).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -71,35 +84,37 @@ const History = () => {
 
     return (
       <View className="bg-white p-4 rounded-3xl border border-sky-100 shadow-sm mb-3 flex-row items-center justify-between mx-6">
-        <View className="flex-row items-center">
+        <View className="flex-row items-center flex-1 pr-2">
           <View
             style={{ backgroundColor: `${beverage.color}20` }}
-            className="p-3 rounded-2xl mr-4"
+            className="p-3 rounded-2xl mr-3.5"
           >
-            {item.type === "water" && (
-              <Droplets size={22} color={beverage.color} />
-            )}
-            {item.type === "coffee" && (
-              <Coffee size={22} color={beverage.color} />
-            )}
-            {item.type === "electrolyte" && (
-              <Zap size={22} color={beverage.color} />
-            )}
+            <IconComponent size={22} color={beverage.color} strokeWidth={2.4} />
           </View>
-          <View>
-            <Text className="text-sky-950 font-black">
-              {item.amount}ml {beverage.label}
-            </Text>
-            <Text className="text-sky-400 text-[10px] font-bold uppercase tracking-tight">
+          <View className="flex-1">
+            <View className="flex-row items-baseline flex-wrap">
+              <Text className="text-sky-950 font-black text-sm">
+                {item.amount}ml {beverage.label}
+              </Text>
+              {isDifferent && (
+                <Text className="text-sky-400 font-bold text-[10px] ml-1.5">
+                  ({item.effectiveAmount}ml effective)
+                </Text>
+              )}
+            </View>
+            <Text className="text-sky-400/80 text-[10px] font-bold uppercase tracking-tight mt-0.5">
               {time}
             </Text>
           </View>
         </View>
         <Pressable
-          onPress={() => removeLog(item.id)}
-          className="p-2 bg-red-50 rounded-full"
+          onPress={() => {
+            hapticLight();
+            removeLog(item.id);
+          }}
+          className="p-2.5 bg-red-50 active:bg-red-100 rounded-full"
         >
-          <Trash2 size={16} color="#ef4444" />
+          <Trash2 size={15} color="#ef4444" />
         </Pressable>
       </View>
     );

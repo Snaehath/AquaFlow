@@ -4,10 +4,9 @@ import {
   sendGoalCelebration,
 } from "@/services/NotificationService";
 import { mmkvStorage } from "@/services/storage";
-import { HydrationLog } from "@/types";
+import { HydrationLog, QuickPreset } from "@/types";
 
 // libraries
-import * as Haptics from "expo-haptics";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -20,6 +19,14 @@ import {
   calculateCompletedBottles, 
   hasCrossedGoal 
 } from "@/utils/hydration";
+import { hapticBeverage, hapticCelebration } from "@/utils/haptics";
+
+export const DEFAULT_QUICK_PRESETS: QuickPreset[] = [
+  { id: "preset_1", label: "Glass", amount: 250, type: "water" },
+  { id: "preset_2", label: "Coffee", amount: 350, type: "coffee" },
+  { id: "preset_3", label: "Bottle", amount: 500, type: "water" },
+  { id: "preset_4", label: "Power", amount: 500, type: "electrolyte" },
+];
 
 export interface DailyHistoryEntry {
   date: string;
@@ -40,6 +47,7 @@ interface HydrationStore {
   reminderInterval: number;
   hapticsEnabled: boolean;
   weeklyHistory: DailyHistoryEntry[];
+  quickPresets: QuickPreset[];
 
   // actions
   addIntake: (
@@ -55,6 +63,8 @@ interface HydrationStore {
   setAlwaysNotify: (enabled: boolean) => void;
   setReminderInterval: (minutes: number) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => void;
+  updateQuickPreset: (index: number, preset: QuickPreset) => void;
+  resetQuickPresets: () => void;
   clearAllData: () => void;
 }
 
@@ -74,6 +84,7 @@ export const useHydrationStore = create<HydrationStore>()(
       reminderInterval: 60,
       hapticsEnabled: true,
       weeklyHistory: [],
+      quickPresets: DEFAULT_QUICK_PRESETS,
 
       setAlwaysNotify: (enabled: boolean) => set({ alwaysNotify: enabled }),
 
@@ -83,6 +94,16 @@ export const useHydrationStore = create<HydrationStore>()(
       },
 
       setHapticsEnabled: (enabled: boolean) => set({ hapticsEnabled: enabled }),
+
+      updateQuickPreset: (index: number, preset: QuickPreset) => {
+        const presets = [...(get().quickPresets || DEFAULT_QUICK_PRESETS)];
+        if (index >= 0 && index < presets.length) {
+          presets[index] = preset;
+          set({ quickPresets: presets });
+        }
+      },
+
+      resetQuickPresets: () => set({ quickPresets: DEFAULT_QUICK_PRESETS }),
 
       clearAllData: () => set({
         intake: 0,
@@ -97,6 +118,7 @@ export const useHydrationStore = create<HydrationStore>()(
         reminderInterval: 60,
         hapticsEnabled: true,
         weeklyHistory: [],
+        quickPresets: DEFAULT_QUICK_PRESETS,
       }),
 
       unlockAchievement: (id: string) => {
@@ -179,28 +201,13 @@ export const useHydrationStore = create<HydrationStore>()(
           logs: [newLog, ...state.logs],
         }));
 
-        if (get().hapticsEnabled) {
-          if (type === "water") {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          } else if (type === "coffee") {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setTimeout(() => {
-              if (get().hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }, 80);
-          } else if (type === "electrolyte") {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-          } else {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          }
-        }
+        await hapticBeverage(type);
 
         if (hasCrossedGoal(currentIntake, newIntake, effectiveGoal)) {
           if (get().lastGoalMetDate !== today) {
             set({ lastGoalMetDate: today });
           }
-          if (get().hapticsEnabled) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          }
+          await hapticCelebration();
           await sendGoalCelebration();
         }
 
