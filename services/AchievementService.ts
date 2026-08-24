@@ -28,6 +28,14 @@ export const checkAchievements = (
     potentialUnlocks.push("hydrated_human");
   }
 
+  if (!unlockedIds.includes("streak_3") && streak >= 3) {
+    potentialUnlocks.push("streak_3");
+  }
+
+  if (!unlockedIds.includes("streak_7") && streak >= 7) {
+    potentialUnlocks.push("streak_7");
+  }
+
   if (!unlockedIds.includes("camel") && newBottleCount >= 3) {
     potentialUnlocks.push("camel");
   }

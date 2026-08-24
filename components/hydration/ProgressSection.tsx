@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { Droplets, Flame } from "lucide-react-native";
+import { Droplets, Flame, Compass } from "lucide-react-native";
 import Animated from "react-native-reanimated";
 import WaterBottle from "../WaterBottle";
 import { BeverageType } from "../../constants/beverages";
@@ -17,6 +17,22 @@ interface ProgressSectionProps {
   hintStyle: any;
 }
 
+const getIntradayPacing = (intakeRatio: number): { text: string; bg: string; textCol: string } => {
+  const currentHour = new Date().getHours();
+  if (intakeRatio >= 1.0) {
+    return { text: "Daily Goal Smashed! 🏆 Keep flowing", bg: "bg-emerald-50 border-emerald-200/80", textCol: "text-emerald-700" };
+  }
+  if (currentHour < 12) {
+    return { text: "Morning Pace: Aim for ~35% by noon 🌅", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-700" };
+  } else if (currentHour < 17) {
+    return { text: "Afternoon Boost: 65% suggested by 5 PM ⚡", bg: "bg-cyan-50 border-cyan-100", textCol: "text-cyan-800" };
+  } else if (currentHour < 21) {
+    return { text: "Evening Flow: Gentle sips to reach goal 🌙", bg: "bg-indigo-50 border-indigo-100", textCol: "text-indigo-700" };
+  } else {
+    return { text: "Night Wind-down: Light sips before sleep 💤", bg: "bg-purple-50 border-purple-100", textCol: "text-purple-700" };
+  }
+};
+
 const ProgressSection: React.FC<ProgressSectionProps> = ({
   progress,
   lastBeverageType,
@@ -27,6 +43,8 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
   onReset,
   hintStyle,
 }) => {
+  const pacing = getIntradayPacing(actualIntake / Math.max(effectiveGoal, 1));
+
   return (
     <View className="items-center py-2">
       <Pressable
@@ -72,11 +90,16 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
           </Text>
         </Text>
 
-        <View className="flex-row mt-2">
-          <View className="flex-row items-center bg-sky-100/50 px-3 py-1.5 rounded-full mr-2">
-            <Flame size={14} color="#0ea5e9" fill="#0ea5e9" />
-            <Text className="text-sky-900 text-[10px] font-bold ml-2">
+        <View className="flex-row items-center mt-2 gap-2">
+          <View className="flex-row items-center bg-sky-100/60 px-3 py-1.5 rounded-full">
+            <Flame size={13} color="#0ea5e9" fill="#0ea5e9" />
+            <Text className="text-sky-900 text-[10px] font-bold ml-1.5">
               {completedBottles} Bottles
+            </Text>
+          </View>
+          <View className={`px-3 py-1.5 rounded-full border ${pacing.bg}`}>
+            <Text className={`text-[10px] font-black ${pacing.textCol}`}>
+              {pacing.text}
             </Text>
           </View>
         </View>
@@ -86,4 +109,5 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
 };
 
 export default React.memo(ProgressSection);
+
 

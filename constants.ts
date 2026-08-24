@@ -1,4 +1,4 @@
-import { Star, Target, Trophy } from "lucide-react-native";
+import { Star, Target, Flame, Shield, Trophy } from "lucide-react-native";
 import {
   Achievement,
   BeverageConfig,
@@ -77,7 +77,7 @@ export const BEVERAGES: Record<BeverageType, BeverageConfig> = {
   },
 };
 
-// Achievement Badges
+// Achievement Badges (Top 5 Milestone System)
 export const ACHIEVEMENTS_DATA: Achievement[] = [
   {
     id: "first_step",
@@ -94,10 +94,25 @@ export const ACHIEVEMENTS_DATA: Achievement[] = [
     image: require("./assets/badges/hydrated_human.png"),
   },
   {
+    id: "streak_3",
+    title: "3-Day Flow",
+    description: "Maintain a 3-day hydration streak.",
+    icon: Flame,
+    image: require("./assets/badges/consistency.png"),
+  },
+  {
+    id: "streak_7",
+    title: "Week Warrior",
+    description: "Maintain a 7-day hydration streak.",
+    icon: Shield,
+    image: require("./assets/badges/hydro_homie.webp"),
+  },
+  {
     id: "camel",
-    title: "Be a Camel",
-    description: "Hit your daily goal 3 times.",
+    title: "Desert Camel",
+    description: "Complete 3 full bottles in one day.",
     icon: Trophy,
     image: require("./assets/badges/camel.png"),
   },
 ];
+

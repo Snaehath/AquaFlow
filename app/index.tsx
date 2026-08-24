@@ -1,6 +1,5 @@
 // libraries
 import * as Haptics from "expo-haptics";
-import { Plus } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -63,6 +62,7 @@ const Dashboard = () => {
   // local state & refs
   const [showCustomLog, setShowCustomLog] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isGoalDismissed, setIsGoalDismissed] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
   const prevCompletedBottles = useRef(completedBottles);
 
@@ -197,22 +197,16 @@ const Dashboard = () => {
           </View>
 
           <View>
-            {isGoalReached && <GoalReachedBanner />}
+            {isGoalReached && !isGoalDismissed && (
+              <GoalReachedBanner onDismiss={() => setIsGoalDismissed(true)} />
+            )}
 
             <WeatherCard weather={weather} profile={profile} />
 
-            <QuickAdd onAdd={handleAdd} />
-
-            <Pressable
-              onPress={() => setShowCustomLog(true)}
-              className="bg-sky-500 p-4 rounded-2xl flex-row items-center justify-center shadow-md my-2"
-              style={({ pressed }) => [
-                { transform: [{ scale: pressed ? 0.95 : 1 }] },
-              ]}
-            >
-              <Plus color="white" size={20} />
-              <Text className="text-white font-black text-lg ml-2">Custom Log</Text>
-            </Pressable>
+            <QuickAdd
+              onAdd={handleAdd}
+              onOpenCustom={() => setShowCustomLog(true)}
+            />
           </View>
         </View>
       </ScrollView>

@@ -17,6 +17,7 @@ import {
   Edit2,
   X,
   Check,
+  Plus,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -27,6 +28,7 @@ import { hapticLight, hapticMedium } from "../utils/haptics";
 
 type Props = {
   onAdd: (amount: number, type: BeverageType) => void;
+  onOpenCustom?: () => void;
 };
 
 const BEVERAGE_ICONS: Record<BeverageType, React.ElementType> = {
@@ -48,7 +50,7 @@ const BEVERAGE_BG: Record<BeverageType, { bg: string; iconColor: string; border:
 const PRESET_AMOUNTS = [150, 250, 330, 500, 750, 1000];
 const BEVERAGE_OPTIONS: BeverageType[] = ["water", "coffee", "tea", "juice", "electrolyte"];
 
-const QuickAdd = ({ onAdd }: Props) => {
+const QuickAdd = ({ onAdd, onOpenCustom }: Props) => {
   const insets = useSafeAreaInsets();
   const presets = useHydrationStore((s) => s.quickPresets);
   const updateQuickPreset = useHydrationStore((s) => s.updateQuickPreset);
@@ -87,9 +89,26 @@ const QuickAdd = ({ onAdd }: Props) => {
         <Text className="text-sky-950/40 text-[11px] font-black uppercase tracking-widest">
           Quick Log
         </Text>
-        <Text className="text-sky-400/80 text-[10px] font-semibold">
-          Hold to customize ⚙️
-        </Text>
+        <View className="flex-row items-center gap-2.5">
+          <Text className="text-sky-400/80 text-[10px] font-semibold">
+            Hold to edit ⚙️
+          </Text>
+          {onOpenCustom && (
+            <Pressable
+              onPress={() => {
+                hapticLight();
+                onOpenCustom();
+              }}
+              style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.95 : 1 }] }]}
+              className="bg-sky-500/10 px-2.5 py-1 rounded-full border border-sky-500/20 flex-row items-center active:bg-sky-500/20"
+            >
+              <Plus size={11} color="#0284c7" strokeWidth={3} />
+              <Text className="text-sky-700 text-[10px] font-black ml-1">
+                Custom
+              </Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {/* Preset Chips */}

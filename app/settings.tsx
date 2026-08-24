@@ -272,7 +272,7 @@ const Settings = () => {
               </View>
             </View>
 
-            <View className="flex-row flex-wrap justify-between">
+            <View className="flex-row flex-wrap gap-2.5 justify-start">
               {ACHIEVEMENTS_DATA.map((ach) => {
                 const isUnlocked = unlockedAchievements.includes(ach.id);
                 const Icon = ach.icon;
@@ -286,28 +286,67 @@ const Settings = () => {
                     style={({ pressed }) => [
                       { transform: [{ scale: pressed ? 0.95 : 1 }] },
                     ]}
-                    className="w-[31%] bg-sky-50/50 p-3 rounded-2xl border border-sky-100/70 mb-3 items-center justify-center"
+                    className="w-[30.5%] aspect-square bg-sky-50/60 p-3 rounded-2xl border border-sky-100 mb-1 items-center justify-center shadow-xs"
                   >
                     {isUnlocked ? (
                       ach.image ? (
                         <Image
                           source={ach.image}
-                          style={{ width: 36, height: 36 }}
+                          style={{ width: 44, height: 44 }}
                           resizeMode="contain"
                         />
                       ) : (
-                        <View className="p-2 rounded-full bg-orange-100">
-                          <Icon size={18} color="#f97316" />
+                        <View className="p-2.5 rounded-full bg-orange-100">
+                          <Icon size={20} color="#f97316" />
                         </View>
                       )
                     ) : (
-                      <View className="p-2 rounded-full bg-slate-200">
-                        <Lock size={18} color="#94a3b8" />
+                      <View className="p-2.5 rounded-full bg-slate-200">
+                        <Lock size={20} color="#94a3b8" />
                       </View>
                     )}
+                    <Text
+                      numberOfLines={1}
+                      className="text-[9px] font-black text-sky-950 mt-1.5 text-center"
+                    >
+                      {ach.title}
+                    </Text>
                   </Pressable>
                 );
               })}
+            </View>
+          </View>
+
+          {/* Hydration Science Guide */}
+          <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mt-6">
+            <View className="flex-row items-center mb-4">
+              <View className="bg-sky-100 p-3 rounded-2xl mr-4">
+                <Activity size={20} color="#0ea5e9" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sky-950 font-bold">Hydration Science</Text>
+                <Text className="text-sky-500 text-xs">
+                  How beverage coefficients work
+                </Text>
+              </View>
+            </View>
+
+            <View className="gap-2">
+              {[
+                { name: "Water", coeff: "100%", desc: "Pure baseline hydration with zero loss", color: "text-sky-600", bg: "bg-sky-50" },
+                { name: "Electrolytes", coeff: "115%", desc: "Enhanced mineral osmolarity & retention", color: "text-cyan-600", bg: "bg-cyan-50" },
+                { name: "Fruit Juice", coeff: "95%", desc: "High water volume with natural carbohydrates", color: "text-orange-600", bg: "bg-orange-50" },
+                { name: "Herbal / Tea", coeff: "92%", desc: "Gentle hydration with natural antioxidants", color: "text-emerald-600", bg: "bg-emerald-50" },
+                { name: "Coffee", coeff: "90%", desc: "Hydrating with mild caffeine diuretic offset", color: "text-amber-600", bg: "bg-amber-50" },
+              ].map((item) => (
+                <View key={item.name} className={`p-3 rounded-2xl ${item.bg} flex-row items-center justify-between`}>
+                  <View className="flex-1 pr-2">
+                    <Text className="text-sky-950 font-bold text-xs">{item.name}</Text>
+                    <Text className="text-sky-500/80 text-[10px]">{item.desc}</Text>
+                  </View>
+                  <Text className={`font-black text-xs ${item.color}`}>{item.coeff}</Text>
+                </View>
+              ))}
             </View>
           </View>
 
