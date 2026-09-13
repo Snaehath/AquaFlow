@@ -41,7 +41,7 @@ const getWeeklyDays = () => {
 
 const History = () => {
   const router = useRouter();
-  const { logs, removeLog, weeklyHistory, actualIntake, effectiveGoal, weeklyVolume } = useHydration();
+  const { logs, removeLog, weeklyHistory, actualIntake, dailyReference, weeklyVolume } = useHydration();
   const [isExpanded, setIsExpanded] = useState(false);
   const weeklyDays = getWeeklyDays();
 
@@ -60,12 +60,11 @@ const History = () => {
     };
   });
 
-  const maxVolume = Math.max(...chartData.map((d) => d.volume), effectiveGoal, 2000);
+  const maxVolume = Math.max(...chartData.map((d) => d.volume), dailyReference, 2000);
 
   const renderLogItem = ({ item }: { item: HydrationLog }) => {
     const beverage = BEVERAGES[item.type] || BEVERAGES.water;
     const IconComponent = BEVERAGE_ICONS[item.type] || Droplets;
-    const isDifferent = item.effectiveAmount !== item.amount;
     const time = new Date(item.timestamp).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -85,11 +84,6 @@ const History = () => {
               <Text className="text-sky-950 font-black text-sm">
                 {item.amount}ml {beverage.label}
               </Text>
-              {isDifferent && (
-                <Text className="text-sky-400 font-bold text-[10px] ml-1.5">
-                  ({item.effectiveAmount}ml effective)
-                </Text>
-              )}
             </View>
             <Text className="text-sky-400/80 text-[10px] font-bold uppercase tracking-tight mt-0.5">
               {time}
@@ -125,7 +119,7 @@ const History = () => {
               <View className="flex-row items-baseline">
                 <Text className="text-white text-4xl font-black">
                   {Math.round(
-                    logs.reduce((acc, log) => acc + log.effectiveAmount, 0),
+                    logs.reduce((acc, log) => acc + log.amount, 0),
                   )}
                 </Text>
                 <Text className="text-sky-100 text-lg font-bold ml-1">ml</Text>
@@ -159,12 +153,12 @@ const History = () => {
         </View>
       </View>
 
-      {/* Weekly Activity Bar Chart */}
+      {/* Weekly Intake Bar Chart */}
       <View className="px-6 mb-4">
         <View className="bg-white p-5 rounded-4xl border border-sky-100 shadow-sm">
           <View className="flex-row justify-between items-center mb-4 px-1">
             <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest">
-              Weekly Activity
+              Weekly Intake
             </Text>
             <Text className="text-sky-500 text-[10px] font-black">
               Avg: {Math.round(weeklyVolume / 7)} ml/day
@@ -172,19 +166,18 @@ const History = () => {
           </View>
           
           <View className="h-28 flex-row justify-between items-end relative px-2 mt-2">
-            {/* Target Goal Line */}
+            {/* Reference Line */}
             <View 
-              style={{ bottom: `${(effectiveGoal / maxVolume) * 100}%` as DimensionValue }}
+              style={{ bottom: `${(dailyReference / maxVolume) * 100}%` as DimensionValue }}
               className="absolute left-0 right-0 h-px border-b border-dashed border-sky-200 z-10 flex-row justify-end"
             >
               <Text className="text-[8px] font-black text-sky-400/60 -mt-3.5 bg-white px-1 mr-2 uppercase tracking-tighter">
-                Goal
+                Reference
               </Text>
             </View>
 
             {chartData.map((day, idx) => {
               const heightPercent = `${Math.max(6, Math.min(100, (day.volume / maxVolume) * 100))}%` as DimensionValue;
-              const isMet = day.volume >= effectiveGoal;
               
               return (
                 <View key={idx} className="items-center flex-1">
@@ -194,8 +187,8 @@ const History = () => {
                         style={{ height: heightPercent }}
                         className={`w-full rounded-full ${
                           day.isToday 
-                            ? isMet ? "bg-sky-500 shadow-md" : "bg-sky-400"
-                            : isMet ? "bg-sky-500/80" : "bg-sky-200"
+                            ? "bg-sky-500 shadow-md" 
+                            : "bg-sky-300"
                         }`}
                       />
                     </View>

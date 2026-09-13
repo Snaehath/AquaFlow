@@ -11,11 +11,11 @@ import { WeatherState, UserProfile, BeverageType } from "@/types";
 import { useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 
-// constants & utils
+// utils
 import { 
   calculateProgress, 
   calculateCompletedBottles, 
-  calculateBaseGoal 
+  calculateDailyReference 
 } from "@/utils/hydration";
 
 const useHydration = () => {
@@ -25,10 +25,8 @@ const useHydration = () => {
   // store state & actions
   const intake = useHydrationStore((s) => s.intake);
   const logs = useHydrationStore((s) => s.logs);
-  const streak = useHydrationStore((s) => s.streak);
   const weeklyVolume = useHydrationStore((s) => s.weeklyVolume);
   const weeklyHistory = useHydrationStore((s) => s.weeklyHistory);
-  const unlockedAchievements = useHydrationStore((s) => s.unlockedAchievements);
   const addIntakeAction = useHydrationStore((s) => s.addIntake);
   const removeLogAction = useHydrationStore((s) => s.removeLog);
   const resetIntakeAction = useHydrationStore((s) => s.resetIntake);
@@ -39,9 +37,8 @@ const useHydration = () => {
   const [weather, setWeather] = useState<WeatherState | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  const baseGoal = profile ? calculateBaseGoal(profile) : 2000;
-  const weatherMultiplier = weather?.multiplier || 1.0;
-  const effectiveGoal = Math.round(baseGoal * weatherMultiplier);
+  // Daily reference: general guide based on weight and activity
+  const dailyReference = profile ? calculateDailyReference(profile) : 2300;
 
   const initializeApp = useCallback(async () => {
     try {
@@ -86,28 +83,26 @@ const useHydration = () => {
 
   return {
     totalIntake: Math.round(intake),
-    intake: Math.min(Math.round(intake), effectiveGoal),
+    intake: Math.round(intake),
     actualIntake: Math.round(intake),
     logs,
     addIntake: (amount: number, type: BeverageType = "water") =>
-      addIntakeAction(amount, type, effectiveGoal),
+      addIntakeAction(amount, type),
     removeLog: removeLogAction,
     resetIntake: resetIntakeAction,
     profile,
     setProfile,
     isLoading,
     weather,
-    effectiveGoal,
+    dailyReference,
+    effectiveGoal: dailyReference, // keep backwards alias for any subcomponents transitioning
 
-    streak,
     weeklyVolume: Math.round(weeklyVolume),
     weeklyHistory,
-    completedBottles: calculateCompletedBottles(Math.round(intake), effectiveGoal),
-    progress: calculateProgress(Math.round(intake), effectiveGoal),
-    isGoalReached: Math.round(intake) >= effectiveGoal,
+    completedBottles: calculateCompletedBottles(Math.round(intake), dailyReference),
+    progress: calculateProgress(Math.round(intake), dailyReference),
     lastBeverageType:
       logs.length > 0 ? logs[0].type : ("water" as BeverageType),
-    unlockedAchievements,
   };
 };
 

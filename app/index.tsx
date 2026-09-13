@@ -16,13 +16,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // store & hooks
-import { useHydrationStore } from "@/store/hydrationStore";
 import { useHydration } from "../hooks/useHydration";
 import * as SplashScreen from "expo-splash-screen";
 
 // constants & components
 import { BeverageType } from "@/types";
-import { hapticWarning } from "@/utils/haptics";
+import { hapticLight, hapticWarning } from "@/utils/haptics";
 import QuickAdd from "../components/QuickAdd";
 
 // hydration components
@@ -31,7 +30,7 @@ import ProgressSection from "../components/hydration/ProgressSection";
 import WeatherCard from "../components/hydration/WeatherCard";
 import CustomLogModal from "../components/hydration/CustomLogModal";
 import { useToastStore } from "@/store/toastStore";
-import { Confetti } from "../components/ui/Confetti";
+import { WaterDropletBurst } from "../components/ui/Confetti";
 
 const Dashboard = () => {
   // hydration hook
@@ -43,20 +42,16 @@ const Dashboard = () => {
     progress,
     completedBottles,
     weather,
-    effectiveGoal,
+    dailyReference,
     lastBeverageType,
     logs,
     removeLog,
-    streak,
     profile,
   } = useHydration();
 
-  // store state
-  const celebrationLevel = useHydrationStore((s) => s.celebrationLevel);
-
   // local state & refs
   const [showCustomLog, setShowCustomLog] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showDroplets, setShowDroplets] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
   const prevCompletedBottles = useRef(completedBottles);
 
@@ -69,29 +64,23 @@ const Dashboard = () => {
     }
   }, [isLoading]);
 
-  // Handle bottle completion with respect to celebration intensity
+  // Subtle water droplet delight when a reference bottle volume is completed
   useEffect(() => {
     if (completedBottles > prevCompletedBottles.current) {
-      if (celebrationLevel === "full") {
-        setShowConfetti(true);
-        const timer = setTimeout(() => setShowConfetti(false), 4000);
-        prevCompletedBottles.current = completedBottles;
-        return () => clearTimeout(timer);
-      } else if (celebrationLevel === "subtle") {
-        showToast({
-          title: "Bottle Completed 💧",
-          description: "Well hydrated today. Listen to what feels right.",
-          variant: "success",
-          duration: 3500,
-        });
-      }
+      hapticLight();
+      setShowDroplets(true);
+      showToast({
+        title: "Bottle filled 💧",
+        description: "Recorded toward today's hydration.",
+        variant: "success",
+        duration: 2500,
+      });
+      const timer = setTimeout(() => setShowDroplets(false), 1000);
       prevCompletedBottles.current = completedBottles;
-    } else {
-      prevCompletedBottles.current = completedBottles;
+      return () => clearTimeout(timer);
     }
-  }, [completedBottles, celebrationLevel, showToast]);
-
-
+    prevCompletedBottles.current = completedBottles;
+  }, [completedBottles, showToast]);
 
   // Pulsing hint animation
   const hintOpacity = useSharedValue(0);
@@ -165,13 +154,13 @@ const Dashboard = () => {
       >
         <View style={{ flexGrow: 1, justifyContent: "space-between" }}>
           <View>
-            <HydrationHeader streak={streak} />
+            <HydrationHeader />
 
             <ProgressSection
               progress={progress}
               lastBeverageType={lastBeverageType}
               actualIntake={actualIntake}
-              effectiveGoal={effectiveGoal}
+              dailyReference={dailyReference}
               completedBottles={completedBottles}
               onAdd={handleAdd}
               onReset={handleReset}
@@ -190,17 +179,16 @@ const Dashboard = () => {
         </View>
       </ScrollView>
 
-
-
       <CustomLogModal
         visible={showCustomLog}
         onClose={() => setShowCustomLog(false)}
         onConfirm={(amount, type) => handleAdd(amount, type)}
       />
 
-      {showConfetti && <Confetti />}
+      {showDroplets && <WaterDropletBurst />}
     </SafeAreaView>
   );
 };
 
 export default Dashboard;
+

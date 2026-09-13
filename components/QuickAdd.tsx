@@ -241,12 +241,6 @@ const QuickAdd = ({ onAdd, onOpenCustom }: Props) => {
                     >
                       {config.label}
                     </Text>
-                    <Text
-                      style={{ color: isSelected ? "#e0f2fe" : "#38bdf8" }}
-                      className="text-[8px] font-bold"
-                    >
-                      {Math.round(config.multiplier * 100)}%
-                    </Text>
                   </Pressable>
                 );
               })}

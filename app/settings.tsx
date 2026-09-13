@@ -1,11 +1,7 @@
 import { useRouter } from "expo-router";
 import {
-  Activity,
-  Award,
-  ChevronDown,
   ChevronLeft,
-  ChevronUp,
-  Lock,
+  Info,
   Minus,
   Plus,
   Save,
@@ -13,15 +9,11 @@ import {
   Smartphone,
   Trash2,
   User,
-  X,
-  Zap,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
-  Modal,
   Pressable,
   ScrollView,
   Text,
@@ -31,11 +23,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { UserProfile } from "@/types";
-import { ACHIEVEMENTS_DATA, DEFAULT_PROFILE } from "../constants";
+import { DEFAULT_PROFILE } from "../constants";
 import { getProfile, saveProfile } from "../services/ProfileService";
 import { useHydrationStore } from "../store/hydrationStore";
 import { hapticLight, hapticMedium } from "../utils/haptics";
-import { calculateBaseGoal } from "../utils/hydration";
+import { calculateDailyReference } from "../utils/hydration";
 
 const Settings = () => {
   const router = useRouter();
@@ -44,28 +36,17 @@ const Settings = () => {
   const [activity, setActivity] = useState<1 | 1.2 | 1.5>(1);
   const [tempUnit, setTempUnit] = useState<"C" | "F">("F");
   const [isSaving, setIsSaving] = useState(false);
-  const [selectedAch, setSelectedAch] = useState<any>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [isScienceExpanded, setIsScienceExpanded] = useState(false);
 
-  const unlockedAchievements = useHydrationStore((s) => s.unlockedAchievements);
   const storeReminderInterval = useHydrationStore((s) => s.reminderInterval);
   const setStoreReminderInterval = useHydrationStore(
     (s) => s.setReminderInterval,
   );
   const storeHapticsEnabled = useHydrationStore((s) => s.hapticsEnabled);
   const setStoreHapticsEnabled = useHydrationStore((s) => s.setHapticsEnabled);
-  const storeCelebrationLevel = useHydrationStore((s) => s.celebrationLevel);
-  const setStoreCelebrationLevel = useHydrationStore(
-    (s) => s.setCelebrationLevel,
-  );
   const clearAllData = useHydrationStore((s) => s.clearAllData);
 
   const [interval, setIntervalState] = useState(90);
   const [haptics, setHaptics] = useState(true);
-  const [celebrationLevel, setCelebrationLevelState] = useState<
-    "full" | "subtle" | "off"
-  >("subtle");
 
   useEffect(() => {
     const load = async () => {
@@ -80,13 +61,12 @@ const Settings = () => {
         storeReminderInterval !== undefined ? storeReminderInterval : 90,
       );
       setHaptics(storeHapticsEnabled ?? true);
-      setCelebrationLevelState(storeCelebrationLevel || "subtle");
     };
     load();
-  }, [storeReminderInterval, storeHapticsEnabled, storeCelebrationLevel]);
+  }, [storeReminderInterval, storeHapticsEnabled]);
 
   const parsedWeight = parseFloat(weight) || 70;
-  const simulatedGoal = calculateBaseGoal({
+  const simulatedReference = calculateDailyReference({
     weight: parsedWeight,
     activityLevel: activity,
     gender: profile.gender || "other",
@@ -121,9 +101,8 @@ const Settings = () => {
     await saveProfile(newProfile);
     await setStoreReminderInterval(interval);
     setStoreHapticsEnabled(haptics);
-    setStoreCelebrationLevel(celebrationLevel);
     setIsSaving(false);
-    Alert.alert("Saved! 💧", "Your hydration profile has been updated.", [
+    Alert.alert("Saved! 💧", "Your hydration preferences have been updated.", [
       { text: "OK", onPress: () => router.back() },
     ]);
   };
@@ -150,7 +129,7 @@ const Settings = () => {
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: 8,
-          paddingBottom: 32,
+          paddingBottom: 40,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -165,7 +144,7 @@ const Settings = () => {
                 Hydration Profile
               </Text>
               <Text className="text-sky-500 text-xs font-medium">
-                Personalized body baseline & activity
+                Personalized body baseline & daily movement
               </Text>
             </View>
           </View>
@@ -256,14 +235,19 @@ const Settings = () => {
           </View>
 
           {/* Live Calculated Target Preview */}
-          <View className="bg-sky-50 p-3.5 rounded-2xl border border-sky-200/60 flex-row items-center">
-            <Zap size={16} color="#0284c7" />
-            <Text className="text-sky-900 text-xs font-semibold ml-2.5 flex-1">
-              Calculated Base Goal:{" "}
-              <Text className="font-black text-sky-950 text-sm">
-                {simulatedGoal} ml
-              </Text>{" "}
-              / day
+          <View className="bg-sky-50 p-4 rounded-2xl border border-sky-200/60">
+            <View className="flex-row items-center mb-1">
+              <Info size={16} color="#0284c7" />
+              <Text className="text-sky-900 text-xs font-semibold ml-2 flex-1">
+                Estimated daily reference:{" "}
+                <Text className="font-black text-sky-950 text-sm">
+                  ~{simulatedReference} ml
+                </Text>{" "}
+                / day
+              </Text>
+            </View>
+            <Text className="text-sky-500/80 text-[11px] leading-4 ml-6">
+              This is a general reference, not a limit. Listen to your body and thirst cues.
             </Text>
           </View>
         </View>
@@ -279,7 +263,7 @@ const Settings = () => {
                 Preferences & Reminders
               </Text>
               <Text className="text-sky-500 text-xs font-medium">
-                Schedules and device settings
+                Schedules and tactile feedback
               </Text>
             </View>
           </View>
@@ -322,41 +306,6 @@ const Settings = () => {
           <Text className="text-sky-400 text-[11px] mb-5 leading-4">
             Gentle reminders throughout your waking hours (Quiet hours: 10:00 PM → 8:00 AM).
           </Text>
-
-          {/* Celebration Intensity */}
-          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
-            Celebrations
-          </Text>
-          <View className="flex-row gap-2 mb-5">
-            {[
-              { label: "Subtle", value: "subtle" },
-              { label: "Full", value: "full" },
-              { label: "Off", value: "off" },
-            ].map((opt) => {
-              const isSelected = celebrationLevel === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => {
-                    hapticLight();
-                    setCelebrationLevelState(opt.value as any);
-                  }}
-                  style={{
-                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
-                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
-                  }}
-                  className="flex-1 py-2.5 rounded-2xl border items-center shadow-sm"
-                >
-                  <Text
-                    style={{ color: isSelected ? "#ffffff" : "#082f49" }}
-                    className="text-xs font-black"
-                  >
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
 
           {/* Temperature Unit */}
           <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
@@ -401,7 +350,7 @@ const Settings = () => {
                 Tactile Haptics
               </Text>
               <Text className="text-sky-400 text-xs">
-                Container weight & celebration pulses
+                Log feedback & subtle bottle fills
               </Text>
             </View>
             <Pressable
@@ -432,7 +381,7 @@ const Settings = () => {
                 Data & Privacy
               </Text>
               <Text className="text-sky-500 text-xs font-medium">
-                100% offline & stored locally
+                100% offline & stored locally on device
               </Text>
             </View>
           </View>
@@ -442,7 +391,7 @@ const Settings = () => {
             onPress={() => {
               Alert.alert(
                 "Delete All Local Data?",
-                "This will permanently erase all your hydration logs, daily streak history, settings, and achievements.",
+                "This will permanently erase all your hydration logs, daily history, and profile settings.",
                 [
                   { text: "Cancel", style: "cancel" },
                   {
@@ -489,291 +438,10 @@ const Settings = () => {
             </>
           )}
         </Pressable>
-
-        {/* 4. MILESTONES & ACHIEVEMENTS (Reference) */}
-        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
-          <View className="flex-row items-center mb-5">
-            <View className="bg-orange-100 p-3 rounded-2xl mr-3.5">
-              <Award size={20} color="#ea580c" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sky-950 font-black text-base">
-                Milestones & Badges
-              </Text>
-              <Text className="text-sky-500 text-xs font-medium">
-                Tap badges to view achievements
-              </Text>
-            </View>
-          </View>
-
-          {/* Symmetrical 2x2 Grid */}
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-              rowGap: 12,
-            }}
-          >
-            {ACHIEVEMENTS_DATA.map((ach) => {
-              const isUnlocked = unlockedAchievements.includes(ach.id);
-              return (
-                <Pressable
-                  key={ach.id}
-                  onPress={() => {
-                    hapticLight();
-                    setSelectedAch(ach);
-                    setModalVisible(true);
-                  }}
-                  style={({ pressed }) => [
-                    {
-                      width: "48%",
-                      minHeight: 110,
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingVertical: 14,
-                      paddingHorizontal: 8,
-                      borderRadius: 22,
-                      backgroundColor: isUnlocked ? "#f0f9ff" : "#f8fafc",
-                      borderColor: isUnlocked ? "#bae6fd" : "#e2e8f0",
-                      borderWidth: 1,
-                      transform: [{ scale: pressed ? 0.96 : 1 }],
-                    },
-                  ]}
-                >
-                  <View
-                    style={{
-                      width: 52,
-                      height: 52,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {isUnlocked ? (
-                      <Image
-                        source={ach.image}
-                        style={{ width: 48, height: 48 }}
-                        resizeMode="contain"
-                      />
-                    ) : (
-                      <View
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 22,
-                          backgroundColor: "#f1f5f9",
-                          borderColor: "#cbd5e1",
-                          borderWidth: 1,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Lock size={18} color="#94a3b8" />
-                      </View>
-                    )}
-                  </View>
-
-                  <View
-                    style={{
-                      justifyContent: "center",
-                      alignItems: "center",
-                      width: "100%",
-                      marginTop: 6,
-                    }}
-                  >
-                    <Text
-                      numberOfLines={1}
-                      style={{
-                        fontSize: 12,
-                        fontWeight: "900",
-                        color: isUnlocked ? "#082f49" : "#64748b",
-                        textAlign: "center",
-                      }}
-                    >
-                      {ach.title}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* 5. HYDRATION SCIENCE GUIDE (Collapsible Reference) */}
-        <Pressable
-          onPress={() => {
-            hapticLight();
-            setIsScienceExpanded(!isScienceExpanded);
-          }}
-          className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-8"
-        >
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center flex-1 pr-2">
-              <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
-                <Activity size={20} color="#0284c7" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sky-950 font-black text-base">
-                  Hydration Science
-                </Text>
-                <Text className="text-sky-500 text-xs font-medium">
-                  Learn how beverage contributions are calculated
-                </Text>
-              </View>
-            </View>
-            {isScienceExpanded ? (
-              <ChevronUp size={20} color="#0284c7" />
-            ) : (
-              <ChevronDown size={20} color="#94a3b8" />
-            )}
-          </View>
-
-          {isScienceExpanded && (
-            <View className="gap-2 mt-4 pt-4 border-t border-sky-50">
-              {[
-                {
-                  name: "Water",
-                  coeff: "100%",
-                  desc: "Pure baseline hydration with zero loss",
-                  color: "text-sky-600",
-                  bg: "bg-sky-50",
-                },
-                {
-                  name: "Electrolytes",
-                  coeff: "115%",
-                  desc: "Enhanced mineral osmolarity & retention",
-                  color: "text-cyan-600",
-                  bg: "bg-cyan-50",
-                },
-                {
-                  name: "Fruit Juice",
-                  coeff: "95%",
-                  desc: "High water volume with natural carbohydrates",
-                  color: "text-orange-600",
-                  bg: "bg-orange-50",
-                },
-                {
-                  name: "Herbal / Tea",
-                  coeff: "92%",
-                  desc: "Gentle hydration with natural antioxidants",
-                  color: "text-emerald-600",
-                  bg: "bg-emerald-50",
-                },
-                {
-                  name: "Coffee",
-                  coeff: "90%",
-                  desc: "Hydrating with mild caffeine diuretic offset",
-                  color: "text-amber-600",
-                  bg: "bg-amber-50",
-                },
-              ].map((item) => (
-                <View
-                  key={item.name}
-                  className={`p-3 rounded-2xl ${item.bg} flex-row items-center justify-between`}
-                >
-                  <View className="flex-1 pr-2">
-                    <Text className="text-sky-950 font-bold text-xs">
-                      {item.name}
-                    </Text>
-                    <Text className="text-sky-500/80 text-[10px]">
-                      {item.desc}
-                    </Text>
-                  </View>
-                  <Text className={`font-black text-xs ${item.color}`}>
-                    {item.coeff}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </Pressable>
       </ScrollView>
-
-      {/* Achievement Details Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black/40 px-6">
-          <View className="bg-white w-full rounded-3xl p-6 items-center shadow-2xl border border-sky-100">
-            {/* Header / Dismiss */}
-            <View className="w-full flex-row justify-end">
-              <Pressable
-                onPress={() => setModalVisible(false)}
-                className="p-2 bg-sky-50 rounded-full active:bg-sky-100"
-              >
-                <X size={18} color="#0ea5e9" />
-              </Pressable>
-            </View>
-
-            {/* Content */}
-            {selectedAch &&
-              (() => {
-                const isUnlocked = unlockedAchievements.includes(
-                  selectedAch.id,
-                );
-
-                return (
-                  <>
-                    <View className="my-4 items-center">
-                      {isUnlocked ? (
-                        <Image
-                          source={selectedAch.image}
-                          style={{ width: 90, height: 90 }}
-                          resizeMode="contain"
-                        />
-                      ) : (
-                        <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center border border-slate-200">
-                          <Lock size={36} color="#94a3b8" />
-                        </View>
-                      )}
-                    </View>
-
-                    <Text className="text-lg font-black text-sky-950 mt-2 text-center">
-                      {selectedAch.title}
-                    </Text>
-
-                    <Text className="text-xs text-center text-sky-900/60 mt-2 px-4 leading-5">
-                      {selectedAch.description}
-                    </Text>
-
-                    <View className="mt-6 w-full gap-2">
-                      <View
-                        style={{
-                          backgroundColor: isUnlocked ? "#f0fdfa" : "#f8fafc",
-                          borderColor: isUnlocked ? "#99f6e4" : "#e2e8f0",
-                        }}
-                        className="flex-row items-center justify-center p-3 rounded-2xl border"
-                      >
-                        <Text
-                          style={{ color: isUnlocked ? "#0f766e" : "#64748b" }}
-                          className="font-bold text-xs"
-                        >
-                          {isUnlocked ? "Unlocked 🏅" : "Locked 🔒"}
-                        </Text>
-                      </View>
-
-                      {isUnlocked && (
-                        <Pressable
-                          onPress={() => setModalVisible(false)}
-                          className="flex-row items-center justify-center bg-sky-500 active:bg-sky-600 p-3.5 rounded-2xl shadow-sm"
-                        >
-                          <Text className="text-white font-black text-xs">
-                            Done
-                          </Text>
-                        </Pressable>
-                      )}
-                    </View>
-                  </>
-                );
-              })()}
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
 
 export default Settings;
+

@@ -1,7 +1,6 @@
 export type WeatherData = {
   temp: number; // in Fahrenheit
   condition: string;
-  multiplier: number;
 };
 
 const API_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
@@ -12,7 +11,6 @@ export const getWeatherData = async (latitude: number, longitude: number): Promi
     return {
       temp: 72,
       condition: "Perfect 🌿",
-      multiplier: 1.0,
     };
   }
 
@@ -35,28 +33,16 @@ export const getWeatherData = async (latitude: number, longitude: number): Promi
 
     const temp = data.main.temp;
     const condition = data.weather[0].main;
-    
-    let multiplier = 1.0;
-    // Thermal Scaling Logic
-    if (temp > 95) {
-      multiplier = 1.25; // Scorching
-    } else if (temp > 85) {
-      multiplier = 1.15; // Hot
-    } else if (temp > 77) {
-      multiplier = 1.1;  // Warm
-    }
 
     return {
       temp,
       condition,
-      multiplier,
     };
   } catch (error) {
     console.error("Weather fetch failed:", error);
     return {
       temp: 70,
       condition: "Unknown ☁️",
-      multiplier: 1.0,
     };
   }
 };

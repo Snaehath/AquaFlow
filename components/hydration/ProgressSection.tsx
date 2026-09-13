@@ -10,7 +10,8 @@ interface ProgressSectionProps {
   progress: number;
   lastBeverageType: BeverageType;
   actualIntake: number;
-  effectiveGoal: number;
+  dailyReference?: number;
+  effectiveGoal?: number;
   completedBottles: number;
   onAdd: (amount: number) => void;
   onReset: () => void;
@@ -34,6 +35,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
   progress,
   lastBeverageType,
   actualIntake,
+  dailyReference,
   effectiveGoal,
   completedBottles,
   onAdd,
@@ -41,6 +43,22 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
   hintStyle,
 }) => {
   const pacing = getIntradayPacing();
+  const refValue = dailyReference ?? effectiveGoal ?? 2500;
+
+  const formattedIntake =
+    actualIntake >= 1000
+      ? `${(actualIntake / 1000).toFixed(actualIntake % 100 === 0 ? 1 : 2)} L`
+      : `${actualIntake} ml`;
+
+  const formattedRef = `~${(refValue / 1000).toFixed(1)} L`;
+  const remainder = actualIntake % refValue;
+
+  const referenceText =
+    completedBottles === 0
+      ? `1st reference bottle · ${Math.round(progress * 100)}%`
+      : `${completedBottles} reference ${
+          completedBottles === 1 ? "bottle" : "bottles"
+        }${remainder > 0 ? ` · +${remainder} ml` : ""}`;
 
   return (
     <View className="items-center py-2">
@@ -77,19 +95,24 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
         ]}
         className="items-center mt-1"
       >
-        <Text className="text-sky-950 text-4xl font-black">
-          {actualIntake}
-          <Text className="text-lg text-sky-400 font-medium">
-            {" "}
-            / {effectiveGoal} ml
+        <View className="flex-row items-baseline">
+          <Text className="text-sky-950 text-4xl font-black">
+            {formattedIntake}
           </Text>
+          <Text className="text-sky-400 text-xs font-bold ml-1.5 uppercase tracking-wider">
+            today
+          </Text>
+        </View>
+
+        <Text className="text-sky-500/80 text-xs font-medium mt-0.5">
+          Daily reference · {formattedRef}
         </Text>
 
-        <View className="flex-row items-center mt-2 gap-2">
+        <View className="flex-row items-center mt-2.5 gap-2">
           <View className="flex-row items-center bg-sky-100/60 px-3 py-1.5 rounded-full">
             <Droplets size={13} color="#0ea5e9" />
             <Text className="text-sky-900 text-[10px] font-bold ml-1.5">
-              {completedBottles} {completedBottles === 1 ? "Bottle" : "Bottles"}
+              {referenceText}
             </Text>
           </View>
           <View className={`px-3 py-1.5 rounded-full border ${pacing.bg}`}>

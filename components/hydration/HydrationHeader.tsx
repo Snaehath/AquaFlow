@@ -1,170 +1,38 @@
-import { useHydrationStore } from "@/store/hydrationStore";
-import { hapticLight } from "@/utils/haptics";
 import { formatDate } from "@/utils/date";
 import { useRouter } from "expo-router";
-import { Droplets, History, Settings, Sparkles, X } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { Animated, Modal, Pressable, Text, View } from "react-native";
+import { History, Settings } from "lucide-react-native";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
 
 interface HydrationHeaderProps {
-  streak: number;
+  streak?: number;
 }
 
-const getMotivation = (streak: number): string => {
-  if (streak <= 1)
-    return "Every drink is a positive step. Start fresh today.";
-  if (streak < 3)
-    return "Your hydration rhythm is steady and natural.";
-  if (streak < 7)
-    return "You've been consistent this week. Keep flowing at your own pace.";
-  return "Wonderful rhythm! You've built a calm, healthy routine.";
-};
-
-const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
+const HydrationHeader: React.FC<HydrationHeaderProps> = () => {
   const router = useRouter();
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const [showStreakModal, setShowStreakModal] = useState(false);
-  const longestStreak = useHydrationStore((s) => s.longestStreak) || streak;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.2,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1.0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, [pulseAnim]);
-
-  const openStreakModal = () => {
-    hapticLight();
-    setShowStreakModal(true);
-  };
 
   return (
-    <View className="py-4 flex-row justify-between items-start">
-      <View className="flex-row items-center">
-        <View>
-          <Text className="text-sky-950 text-2xl font-black">AquaFlow</Text>
-          <View className="flex-row items-center">
-            <Text className="text-sky-600 text-xs font-bold uppercase tracking-tighter">
-              {formatDate(new Date())}
-            </Text>
-            {streak > 0 && (
-              <Pressable
-                onPress={openStreakModal}
-                style={({ pressed }) => [
-                  { transform: [{ scale: pressed ? 0.94 : 1 }] },
-                ]}
-                className="bg-sky-100/80 px-2.5 py-0.5 rounded-full ml-2 flex-row items-center active:bg-sky-200"
-              >
-                <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-                  <Droplets size={11} color="#0284c7" />
-                </Animated.View>
-                <Text className="text-sky-800 text-[10px] font-black ml-1">
-                  {streak} Day Rhythm
-                </Text>
-              </Pressable>
-            )}
-          </View>
-        </View>
+    <View className="py-4 flex-row justify-between items-center">
+      <View>
+        <Text className="text-sky-950 text-2xl font-black">AquaFlow</Text>
+        <Text className="text-sky-600 text-xs font-bold uppercase tracking-wider mt-0.5">
+          {formatDate(new Date())}
+        </Text>
       </View>
       <View className="flex-row">
         <Pressable
           onPress={() => router.push("/history")}
-          className="ml-2 p-2 bg-white/80 rounded-full border border-sky-100 shadow-sm active:bg-sky-50"
+          className="p-2.5 bg-white rounded-2xl border border-sky-100 shadow-xs active:bg-sky-50"
         >
           <History size={18} color="#0ea5e9" />
         </Pressable>
         <Pressable
           onPress={() => router.push("/settings")}
-          className="ml-2 p-2 bg-white/80 rounded-full border border-sky-100 shadow-sm active:bg-sky-50"
+          className="ml-2 p-2.5 bg-white rounded-2xl border border-sky-100 shadow-xs active:bg-sky-50"
         >
           <Settings size={18} color="#0ea5e9" />
         </Pressable>
       </View>
-
-      {/* Streak Status & Motivation Modal */}
-      <Modal
-        visible={showStreakModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowStreakModal(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black/40 px-6">
-          <View className="bg-white w-full rounded-3xl p-6 items-center shadow-2xl border border-sky-100">
-            {/* Header / Dismiss */}
-            <View className="w-full flex-row justify-between items-center mb-4">
-              <View className="flex-row items-center">
-                <View className="bg-sky-100 p-2 rounded-xl mr-2.5">
-                  <Droplets size={20} color="#0284c7" />
-                </View>
-                <Text className="text-sky-950 font-black text-lg">
-                  Hydration Rhythm
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => setShowStreakModal(false)}
-                className="p-2 bg-sky-50 rounded-full active:bg-sky-100"
-              >
-                <X size={16} color="#0284c7" />
-              </Pressable>
-            </View>
-
-            {/* Streak Metrics Cards */}
-            <View className="flex-row gap-3 w-full my-3">
-              <View className="flex-1 bg-sky-50 border border-sky-200/70 p-4 rounded-2xl items-center">
-                <Text className="text-sky-600 text-[10px] font-black uppercase tracking-wider">
-                  Current Rhythm
-                </Text>
-                <Text className="text-sky-950 text-3xl font-black mt-1">
-                  {streak} <Text className="text-sm font-bold">Days</Text>
-                </Text>
-              </View>
-
-              <View className="flex-1 bg-sky-50/60 border border-sky-100 p-4 rounded-2xl items-center">
-                <Text className="text-sky-500 text-[10px] font-black uppercase tracking-wider">
-                  Longest Rhythm
-                </Text>
-                <Text className="text-sky-800 text-3xl font-black mt-1">
-                  {longestStreak}{" "}
-                  <Text className="text-sm font-bold">Days</Text>
-                </Text>
-              </View>
-            </View>
-
-            {/* Daily Consistency Motivation */}
-            <View className="bg-sky-50/60 p-4 rounded-2xl border border-sky-100 w-full mt-2">
-              <View className="flex-row items-center mb-1">
-                <Sparkles size={14} color="#0284c7" />
-                <Text className="text-sky-950 font-black text-xs ml-1.5">
-                  Natural Flow
-                </Text>
-              </View>
-              <Text className="text-sky-700 text-xs leading-5">
-                {getMotivation(streak)}
-              </Text>
-            </View>
-
-            {/* Confirmation CTA */}
-            <Pressable
-              onPress={() => setShowStreakModal(false)}
-              className="bg-sky-500 active:bg-sky-600 py-3.5 px-6 rounded-2xl items-center justify-center w-full mt-5 shadow-sm"
-            >
-              <Text className="text-white font-black text-sm">
-                Got it
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };

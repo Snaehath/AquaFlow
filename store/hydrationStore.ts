@@ -1,23 +1,20 @@
-// services & storage
+// types & storage
 import {
-  rescheduleAllReminders,
-} from "@/services/NotificationService";
-import { mmkvStorage } from "@/services/storage";
-import { BeverageType, DailyHistoryEntry, HydrationLog, QuickPreset } from "@/types";
+  BeverageType,
+  DailyHistoryEntry,
+  HydrationLog,
+  QuickPreset,
+} from "@/types";
 
 // libraries
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-// constants & utils
-import { checkAchievements } from "@/services/AchievementService";
-import { getTodayString, getYesterdayString, getWeekStart } from "@/utils/date";
-import { 
-  calculateEffectiveAmount, 
-  calculateCompletedBottles, 
-  hasCrossedGoal 
-} from "@/utils/hydration";
-import { hapticBeverage, hapticCelebration, hapticLight, setGlobalHapticsEnabled } from "@/utils/haptics";
+// utils & services
+import { rescheduleAllReminders } from "@/services/NotificationService";
+import { mmkvStorage } from "@/services/storage";
+import { getTodayString, getWeekStart } from "@/utils/date";
+import { hapticBeverage, setGlobalHapticsEnabled } from "@/utils/haptics";
 
 export const DEFAULT_QUICK_PRESETS: QuickPreset[] = [
   { id: "preset_1", label: "Glass", amount: 250, type: "water" },
@@ -31,55 +28,38 @@ interface HydrationStore {
   intake: number;
   logs: HydrationLog[];
   lastDate: string;
-  streak: number;
-  longestStreak: number;
-  lastGoalMetDate: string | null;
-  unlockedAchievements: string[];
   weeklyVolume: number;
   lastWeekReset: string;
   alwaysNotify: boolean;
   reminderInterval: number;
   hapticsEnabled: boolean;
-  celebrationLevel: "full" | "subtle" | "off";
   weeklyHistory: DailyHistoryEntry[];
   quickPresets: QuickPreset[];
 
   // actions
-  addIntake: (
-    amount: number,
-    type?: BeverageType,
-    effectiveGoal?: number,
-  ) => Promise<void>;
+  addIntake: (amount: number, type?: BeverageType) => Promise<void>;
   removeLog: (id: string) => void;
   resetIntake: () => void;
   checkDayReset: () => void;
-  unlockAchievement: (id: string) => void;
   setAlwaysNotify: (enabled: boolean) => void;
   setReminderInterval: (minutes: number) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => void;
-  setCelebrationLevel: (level: "full" | "subtle" | "off") => void;
   updateQuickPreset: (index: number, preset: QuickPreset) => void;
   resetQuickPresets: () => void;
   clearAllData: () => void;
 }
 
-// store implementation
 export const useHydrationStore = create<HydrationStore>()(
   persist(
     (set, get) => ({
       intake: 0,
       logs: [],
       lastDate: getTodayString(),
-      streak: 1,
-      longestStreak: 1,
-      lastGoalMetDate: null,
-      unlockedAchievements: [],
       weeklyVolume: 0,
       lastWeekReset: getWeekStart(),
       alwaysNotify: false,
       reminderInterval: 90,
       hapticsEnabled: true,
-      celebrationLevel: "subtle",
       weeklyHistory: [],
       quickPresets: DEFAULT_QUICK_PRESETS,
 
@@ -95,10 +75,6 @@ export const useHydrationStore = create<HydrationStore>()(
         set({ hapticsEnabled: enabled });
       },
 
-      setCelebrationLevel: (level: "full" | "subtle" | "off") => {
-        set({ celebrationLevel: level });
-      },
-
       updateQuickPreset: (index: number, preset: QuickPreset) => {
         const presets = [...(get().quickPresets || DEFAULT_QUICK_PRESETS)];
         if (index >= 0 && index < presets.length) {
@@ -109,30 +85,19 @@ export const useHydrationStore = create<HydrationStore>()(
 
       resetQuickPresets: () => set({ quickPresets: DEFAULT_QUICK_PRESETS }),
 
-      clearAllData: () => set({
-        intake: 0,
-        logs: [],
-        lastDate: getTodayString(),
-        streak: 1,
-        longestStreak: 1,
-        lastGoalMetDate: null,
-        unlockedAchievements: [],
-        weeklyVolume: 0,
-        lastWeekReset: getWeekStart(),
-        alwaysNotify: false,
-        reminderInterval: 90,
-        hapticsEnabled: true,
-        celebrationLevel: "subtle",
-        weeklyHistory: [],
-        quickPresets: DEFAULT_QUICK_PRESETS,
-      }),
-
-      unlockAchievement: (id: string) => {
-        const { unlockedAchievements } = get();
-        if (!unlockedAchievements.includes(id)) {
-          set({ unlockedAchievements: [...unlockedAchievements, id] });
-        }
-      },
+      clearAllData: () =>
+        set({
+          intake: 0,
+          logs: [],
+          lastDate: getTodayString(),
+          weeklyVolume: 0,
+          lastWeekReset: getWeekStart(),
+          alwaysNotify: false,
+          reminderInterval: 90,
+          hapticsEnabled: true,
+          weeklyHistory: [],
+          quickPresets: DEFAULT_QUICK_PRESETS,
+        }),
 
       checkDayReset: () => {
         const today = getTodayString();
@@ -142,33 +107,19 @@ export const useHydrationStore = create<HydrationStore>()(
         const updates: Partial<HydrationStore> = {};
 
         if (state.lastDate !== today) {
-          const yesterday = getYesterdayString();
-          let newStreak = state.streak;
-
-          // Activity-based streak: increment if last session was yesterday and had logs
-          if (state.lastDate === yesterday && state.logs.length > 0) {
-            newStreak += 1;
-          } else {
-            // Missed a day or no logs last session, reset to Day 1
-            newStreak = 1;
-          }
-
-          const longestStreak = Math.max(state.longestStreak || 1, newStreak);
-
           // Save yesterday's entry to weeklyHistory
           const yesterdayEntry: DailyHistoryEntry = {
             date: state.lastDate,
             volume: state.intake,
           };
-          const cleanHistory = (state.weeklyHistory || [])
-            .filter((h) => h.date !== state.lastDate);
+          const cleanHistory = (state.weeklyHistory || []).filter(
+            (h) => h.date !== state.lastDate,
+          );
           const newHistory = [...cleanHistory, yesterdayEntry].slice(-7);
 
           updates.intake = 0;
           updates.logs = [];
           updates.lastDate = today;
-          updates.streak = newStreak;
-          updates.longestStreak = longestStreak;
           updates.weeklyHistory = newHistory;
         }
 
@@ -184,57 +135,21 @@ export const useHydrationStore = create<HydrationStore>()(
         }
       },
 
-      addIntake: async (
-        amount,
-        type = "water",
-        effectiveGoal = 2000,
-      ) => {
-        const effectiveAmount = calculateEffectiveAmount(amount, type);
-        const today = getTodayString();
-        
+      addIntake: async (amount, type = "water") => {
         const newLog: HydrationLog = {
           id: Math.random().toString(36).substring(7),
           amount,
-          effectiveAmount,
           type,
           timestamp: Date.now(),
         };
 
-        const currentIntake = get().intake;
-        const newIntake = currentIntake + effectiveAmount;
-
         set((state) => ({
-          intake: state.intake + effectiveAmount,
-          weeklyVolume: state.weeklyVolume + effectiveAmount,
+          intake: state.intake + amount,
+          weeklyVolume: state.weeklyVolume + amount,
           logs: [newLog, ...state.logs],
         }));
 
         await hapticBeverage(type);
-
-        if (hasCrossedGoal(currentIntake, newIntake, effectiveGoal)) {
-          if (get().lastGoalMetDate !== today) {
-            set({ lastGoalMetDate: today });
-          }
-          const { celebrationLevel } = get();
-          if (celebrationLevel === "full") {
-            await hapticCelebration();
-          } else if (celebrationLevel === "subtle") {
-            await hapticLight();
-          }
-        }
-
-        // Check achievements
-        const state = get();
-        checkAchievements(
-          state.unlockedAchievements,
-          {
-            newBottleCount: calculateCompletedBottles(newIntake, effectiveGoal),
-            streak: state.streak,
-            logsCount: state.logs.length,
-          },
-          state.unlockAchievement,
-        );
-
       },
 
       removeLog: (id) => {
@@ -243,8 +158,8 @@ export const useHydrationStore = create<HydrationStore>()(
           if (!logToRemove) return state;
 
           return {
-            intake: Math.max(0, state.intake - logToRemove.effectiveAmount),
-            weeklyVolume: Math.max(0, state.weeklyVolume - logToRemove.effectiveAmount),
+            intake: Math.max(0, state.intake - logToRemove.amount),
+            weeklyVolume: Math.max(0, state.weeklyVolume - logToRemove.amount),
             logs: state.logs.filter((l) => l.id !== id),
           };
         });
@@ -260,4 +175,3 @@ export const useHydrationStore = create<HydrationStore>()(
     },
   ),
 );
-

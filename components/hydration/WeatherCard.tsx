@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Animated } from "react-native";
-import { Thermometer, Flame } from "lucide-react-native";
+import { Thermometer, Sun } from "lucide-react-native";
 import { WeatherState, UserProfile } from "@/types";
 
 interface WeatherCardProps {
@@ -8,9 +8,15 @@ interface WeatherCardProps {
   profile: UserProfile | null;
 }
 
+const getConditionNote = (tempF?: number): string => {
+  if (!tempF) return "Standard climate conditions";
+  if (tempF > 85) return "Warm day outside";
+  if (tempF > 75) return "Pleasant and warm outside";
+  if (tempF < 50) return "Cool weather outside";
+  return "Mild day outside";
+};
+
 const WeatherCard: React.FC<WeatherCardProps> = ({ weather, profile }) => {
-  const multiplier = weather?.multiplier ?? 1;
-  const isHeatwave = multiplier > 1.0;
   const isCelsius = profile?.tempUnit === "C";
   const tempUnit = isCelsius ? "°C" : "°F";
   const displayTemp = weather?.temp
@@ -37,7 +43,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ weather, profile }) => {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  const percentageBoost = Math.round((multiplier - 1) * 100);
+  const isWarm = weather?.temp ? weather.temp > 80 : false;
 
   return (
     <Animated.View
@@ -45,50 +51,27 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ weather, profile }) => {
         opacity: fadeAnim,
         transform: [{ translateY: slideAnim }],
       }}
-      className={`flex-row items-center px-4 py-3.5 rounded-3xl mb-2 border shadow-sm ${
-        isHeatwave
-          ? "bg-amber-50/90 border-amber-200/80"
-          : "bg-white/80 border-sky-100"
-      }`}
+      className="flex-row items-center px-4 py-3.5 rounded-3xl mb-3 border border-sky-100/80 bg-white/90 shadow-xs"
     >
       <View className="flex-1 flex-row items-center">
-        <View
-          className={`w-10 h-10 rounded-2xl items-center justify-center mr-3 ${
-            isHeatwave ? "bg-amber-100" : "bg-sky-50"
-          }`}
-        >
-          {isHeatwave ? (
-            <Flame size={20} color="#d97706" />
+        <View className="w-10 h-10 rounded-2xl items-center justify-center mr-3 bg-sky-50">
+          {isWarm ? (
+            <Sun size={20} color="#0284c7" />
           ) : (
-            <Thermometer size={20} color="#0ea5e9" />
+            <Thermometer size={20} color="#0284c7" />
           )}
         </View>
         <View className="flex-1">
-          <View className="flex-row items-center">
-            <Text className="text-sky-950 font-black text-sm">
-              {weather?.city ?? "Local Climate"}
-            </Text>
-            {isHeatwave && (
-              <View className="bg-amber-500/15 px-2 py-0.5 rounded-full ml-2">
-                <Text className="text-amber-700 text-[9px] font-black uppercase tracking-tight">
-                  +{percentageBoost}% Heat Boost
-                </Text>
-              </View>
-            )}
-          </View>
-          <Text className="text-sky-500/90 text-[11px] font-semibold mt-0.5">
-            {isHeatwave
-              ? "Goal boosted automatically for heat hydration"
-              : "Standard hydration for climate"}
+          <Text className="text-sky-950 font-black text-sm">
+            {weather?.city ?? "Local Climate"}
+          </Text>
+          <Text className="text-sky-500 text-[11px] font-medium mt-0.5">
+            {getConditionNote(weather?.temp)}
           </Text>
         </View>
       </View>
       <View className="items-end pl-2">
-        <Text
-          className={`text-xl font-black ${
-            isHeatwave ? "text-amber-600" : "text-sky-950"
-          }`}
-        >
+        <Text className="text-xl font-black text-sky-950">
           {displayTemp}
           {tempUnit}
         </Text>
@@ -98,5 +81,3 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ weather, profile }) => {
 };
 
 export default React.memo(WeatherCard);
-
-

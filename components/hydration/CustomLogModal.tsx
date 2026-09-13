@@ -8,11 +8,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { Check, X, Info } from "lucide-react-native";
+import { Check, X } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BeverageType } from "@/types";
 import { BEVERAGES, BEVERAGE_TYPES } from "@/constants";
-import { calculateEffectiveAmount } from "@/utils/hydration";
 import { hapticLight, hapticHeavy } from "@/utils/haptics";
 import { BEVERAGE_ICONS } from "../QuickAdd";
 
@@ -46,11 +45,6 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
     !isNaN(parsedAmount) && parsedAmount > 0 ? parsedAmount : 250;
   const isValid =
     isNaN(parsedAmount) || (parsedAmount > 0 && parsedAmount <= 3000);
-
-  const effectiveVolume = calculateEffectiveAmount(
-    effectiveBaseAmount,
-    selectedType,
-  );
 
   const handleConfirm = () => {
     if (parsedAmount > 3000) return;
@@ -138,12 +132,6 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
                   >
                     {config.label}
                   </Text>
-                  <Text
-                    style={{ color: isSelected ? "#e0f2fe" : "#38bdf8" }}
-                    className="text-[8px] font-bold"
-                  >
-                    {Math.round(config.multiplier * 100)}%
-                  </Text>
                 </Pressable>
               );
             })}
@@ -181,7 +169,7 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
           </View>
 
           {/* Input Box */}
-          <View className="flex-row items-center bg-sky-50/80 px-5 py-3.5 rounded-2xl border border-sky-100 mb-3">
+          <View className="flex-row items-center bg-sky-50/80 px-5 py-3.5 rounded-2xl border border-sky-100 mb-6">
             <TextInput
               className="flex-1 text-sky-950 font-black text-3xl p-0"
               placeholder="250"
@@ -192,18 +180,6 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
               maxLength={4}
             />
             <Text className="text-sky-400 font-black text-lg ml-2">ml</Text>
-          </View>
-
-          {/* Hydration Contribution Pill */}
-          <View className="flex-row items-center bg-sky-50/60 px-3.5 py-2 rounded-xl border border-sky-100/60 mb-5">
-            <Info size={14} color="#0284c7" />
-            <Text className="text-sky-700 text-xs font-medium ml-2 flex-1">
-              {"Counts as "}
-              <Text className="font-bold text-sky-950">
-                {effectiveVolume} ml
-              </Text>
-              {" toward today's hydration"}
-            </Text>
           </View>
 
           {/* Action Buttons */}
