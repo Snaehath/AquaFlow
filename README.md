@@ -10,9 +10,9 @@
 
 ### 💧 Pure Awareness, Zero Pressure
 - **No Finish Lines, No Failures**: No arbitrary targets, no streaks to break, no badges to unlock, and no guilt.
-- **Estimated Daily Reference**: Offers a gentle reference guideline (e.g. `~2.7 L / day`) based on body baseline and daily energy, rather than an enforced quota.
-- **Repeating Reference Bottles**: Bottles represent intuitive volume milestones (`💧 2 reference bottles · +200 ml`) without capping or resetting.
-- **Subtle Water Droplet Delight**: Completing a reference bottle volume triggers a soft ~800ms water droplet particle burst and gentle haptic tap.
+- **Estimated Daily Reference**: Offers a gentle reference guideline (e.g. `~2.5 L / day`) based on body baseline and daily energy, rather than an enforced quota.
+- **Repeating Bottles**: Bottles represent intuitive volume milestones (`💧 2 bottles · +200 ml`) without capping or resetting.
+- **Light Confetti Delight**: Completing a bottle volume triggers a delicate, colorful confetti cascade and a quiet toast: **`Bottle filled 💧`**.
 
 ### 🌊 Dual-Wave Liquid Physics
 - **Dual-Layer Fluid Dynamics**: Interactive 3000ms primary front wave coupled with a 4600ms secondary depth wave.
@@ -22,23 +22,25 @@
 ### ⚡ Frictionless 1-Tap Logging
 - **1:1 Fluid Tracking**: Every milliliter counts as 1 ml fluid volume without physiological multipliers or confusing conversions.
 - **Centralized Tactile Engine**: Beverage-specific haptic signatures (crisp pulse for Water, warm pulse for Coffee, energetic surge for Electrolytes).
-- **Hold-to-Customize Quick Presets**: 4 store-persisted customizable preset buttons (`Glass 250ml`, `Coffee 350ml`, `Bottle 500ml`, `Electrolyte 500ml`).
+- **Hold-to-Customize Quick Presets**: 4 store-persisted customizable preset buttons (`Glass 250ml`, `Coffee 350ml`, `Bottle 500ml`, `Electrolytes 500ml`).
 - **Inline Custom Logger**: Integrated `+ Custom` action allowing arbitrary volume and beverage selection.
 
 ### 🌤️ Ambient Weather Context
-- **Environmental Awareness**: Displays local temperature and weather conditions (e.g. `Warm day outside · 30°C`) purely as ambient awareness—without artificial goal multipliers or prescriptive demands.
+- **Environmental Awareness**: Displays local temperature and weather conditions (e.g. `Warm outside · 30°C`) purely as ambient awareness—without artificial goal multipliers or prescriptive demands.
 
 ### ⏱️ Respectful Reminders & Quiet Hours
 - **Gentle Scheduling**: Choose between `Every 90m`, `Every 2h`, `Every 3h`, or `Off`.
 - **Built-in Quiet Hours**: Reminders are strictly confined to waking hours (8:00 AM → 10:00 PM), never disturbing your sleep.
+- **Conversational Tone**: Simple, thoughtful reminders (*"Time for a drink? Have some water when you're ready."*).
 
-### 📊 Fluid Diversity & Weekly Intake
-- **Daily Fluid Diversity Bar**: Color-coded distribution breakdown of daily liquid intake across beverage types.
-- **Weekly Intake Chart**: 7-day volume visualization with average intake and subtle reference guideline.
+### 📊 History & Drinks Breakdown
+- **Daily & Weekly Overview**: Simple `Today` and `This Week` summary cards.
+- **Drinks Breakdown**: Color-coded distribution of daily drinks across beverage types.
+- **This Week Chart**: 7-day volume visualization with average intake and subtle reference guideline.
 
-### ⚙️ Streamlined 3-Card Settings
-- **Hydration Profile**: Weight stepper and activity level selector with live estimated daily reference preview.
-- **Preferences & Reminders**: Interval selector, temperature unit toggle (°C / °F), and tactile haptics switch.
+### ⚙️ Streamlined Settings
+- **Your details**: Weight stepper and activity level selector with live estimated daily reference preview.
+- **Reminders & display**: Interval selector, temperature unit toggle (°C / °F), and vibration switch.
 - **Data & Privacy**: 100% offline, stored locally on-device with single-tap data reset.
 
 ---
@@ -66,17 +68,17 @@ aquaFlow/
 ├── app/
 │   ├── _layout.tsx           # Global app layout & notification initialization
 │   ├── index.tsx             # Main dashboard (Bottle, Pacer, QuickAdd)
-│   ├── history.tsx           # History, Fluid Diversity & weekly intake
-│   └── settings.tsx          # Profile, Reminders & Data Privacy
+│   ├── history.tsx           # History, drinks breakdown & weekly intake
+│   └── settings.tsx          # Details, reminders & data privacy
 ├── components/
 │   ├── WaterBottle.tsx       # Dual-wave physics & liquid morphing bottle
 │   ├── QuickAdd.tsx          # 1-tap quick log & customizable preset modal
 │   ├── ui/
-│   │   ├── Confetti.tsx      # Subtle water droplet burst animation
+│   │   ├── Confetti.tsx      # Light, delicate confetti animation
 │   │   └── Toast.tsx         # Contextual toast notifications
 │   └── hydration/
 │       ├── HydrationHeader.tsx   # Header (Date & navigation)
-│       ├── ProgressSection.tsx   # Intake volume, reference bottles & pacer
+│       ├── ProgressSection.tsx   # Intake volume, bottle count & pacer
 │       ├── WeatherCard.tsx       # Ambient weather context
 │       └── CustomLogModal.tsx    # Multi-beverage volume selector
 ├── constants.ts              # Beverage palette, default profile & pacing suggestions
@@ -140,9 +142,6 @@ npx expo run:ios
 AquaFlow is built with strict privacy principles:
 - **100% Local Storage**: All hydration logs, history, and personal metrics stay on your device via MMKV.
 - **Waking-Hours Protected**: Notifications are scheduled deterministically strictly between 8:00 AM and 10:00 PM without external push servers.
+- **Privacy Policy**: Read our full [Privacy Policy](https://snaehath.github.io/AquaFlow/#privacy).
 
----
-
-## 📄 License
-This project is open source and available under the [MIT License](LICENSE).
 

@@ -1,10 +1,12 @@
 import { useRouter } from "expo-router";
 import {
   ChevronLeft,
+  ExternalLink,
   Info,
   Minus,
   Plus,
   Save,
+  ShieldCheck,
   Sliders,
   Smartphone,
   Trash2,
@@ -14,6 +16,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Pressable,
   ScrollView,
   Text,
@@ -386,7 +389,24 @@ const Settings = () => {
             </View>
           </View>
 
-          {/* Wipe Data Button */}
+          {/* Privacy policy link */}
+          <Pressable
+            onPress={() => {
+              hapticLight();
+              Linking.openURL("https://snaehath.github.io/AquaFlow/#privacy");
+            }}
+            className="flex-row items-center justify-between py-3.5 border-b border-sky-50 active:opacity-60"
+          >
+            <View className="flex-row items-center">
+              <ShieldCheck size={16} color="#0284c7" />
+              <Text className="text-sky-950 font-bold text-sm ml-2.5">
+                Privacy Policy
+              </Text>
+            </View>
+            <ExternalLink size={14} color="#94a3b8" />
+          </Pressable>
+
+          {/* Wipe data button */}
           <Pressable
             onPress={() => {
               Alert.alert(
