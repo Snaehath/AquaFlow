@@ -133,7 +133,7 @@ const Settings = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1. UNIFIED HYDRATION PROFILE CARD */}
+        {/* Profile details */}
         <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
           <View className="flex-row items-center mb-5">
             <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
@@ -149,7 +149,7 @@ const Settings = () => {
             </View>
           </View>
 
-          {/* Weight Stepper & Input */}
+          {/* Weight stepper */}
           <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
             Weight
           </Text>
@@ -193,7 +193,7 @@ const Settings = () => {
             </Pressable>
           </View>
 
-          {/* Activity Level Segmented Selector */}
+          {/* Activity selector */}
           <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
             Activity
           </Text>
@@ -234,7 +234,7 @@ const Settings = () => {
             })}
           </View>
 
-          {/* Live Calculated Target Preview */}
+          {/* Reference preview */}
           <View className="bg-sky-50 p-4 rounded-2xl border border-sky-200/60">
             <View className="flex-row items-center mb-1">
               <Info size={16} color="#0284c7" />
@@ -252,7 +252,7 @@ const Settings = () => {
           </View>
         </View>
 
-        {/* 2. REMINDERS & PREFERENCES CARD */}
+        {/* Reminders and display */}
         <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
           <View className="flex-row items-center mb-5">
             <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
@@ -370,7 +370,7 @@ const Settings = () => {
           </View>
         </View>
 
-        {/* 3. SYSTEM & DATA MANAGEMENT */}
+        {/* Data and privacy */}
         <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
           <View className="flex-row items-center mb-4">
             <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">

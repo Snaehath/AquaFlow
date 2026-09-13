@@ -52,7 +52,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
 
   const formattedRef = `~${(refValue / 1000).toFixed(1)} L`;
   
-  // Note: remainder represents volume consumed beyond completed reference bottles (+X ml), NOT volume remaining to drink
+  // Fluid volume beyond completed bottles
   const remainder = actualIntake % refValue;
 
   const bottleText =

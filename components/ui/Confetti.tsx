@@ -11,17 +11,18 @@ import Animated, {
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const CONFETTI_COUNT = 55;
+// Lightweight count for a delicate, uncluttered celebration
+const CONFETTI_COUNT = 32;
+
+// Soft, harmonious pastel and jewel tones
 const COLORS = [
-  "#38bdf8", // sky-400
-  "#0ea5e9", // sky-500
-  "#0284c7", // sky-600
-  "#3b82f6", // blue-500
-  "#60a5fa", // blue-400
-  "#10b981", // emerald-500
-  "#f59e0b", // amber-500
-  "#fb7185", // rose-400
-  "#a855f7", // purple-500
+  "#38bdf8", // sky
+  "#0ea5e9", // ocean
+  "#22d3ee", // cyan
+  "#34d399", // soft mint
+  "#fbbf24", // warm gold
+  "#f472b6", // soft rose
+  "#818cf8", // soft lavender
 ];
 
 interface ConfettiPieceProps {
@@ -30,40 +31,50 @@ interface ConfettiPieceProps {
 
 const ConfettiPiece: React.FC<ConfettiPieceProps> = ({ index }) => {
   const startX = Math.random() * SCREEN_WIDTH;
-  const size = Math.random() * 8 + 6; // 6 to 14px
-  const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-  const isCircle = Math.random() > 0.45;
+  const size = Math.random() * 4 + 5; // 5px to 9px
+  const color = COLORS[index % COLORS.length];
+  const isRound = Math.random() > 0.4;
+  const drift = (Math.random() - 0.5) * 60; // gentle horizontal drift
 
-  const yVal = useSharedValue(-40);
+  const yVal = useSharedValue(-20);
   const xVal = useSharedValue(startX);
   const rotation = useSharedValue(0);
-  const opacity = useSharedValue(1);
+  const opacity = useSharedValue(0.95);
 
   useEffect(() => {
-    const duration = Math.random() * 1500 + 2200; // 2.2s to 3.7s
-    const delay = Math.random() * 600;
+    const duration = Math.random() * 800 + 2200; // 2.2s to 3.0s
+    const delay = Math.random() * 400;
 
-    // Fall animation
+    // Smooth descent across screen
     yVal.value = withDelay(
       delay,
-      withTiming(SCREEN_HEIGHT + 40, {
+      withTiming(SCREEN_HEIGHT + 30, {
         duration,
         easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       })
     );
 
-    // Fade out near the end
-    opacity.value = withDelay(
-      delay + duration * 0.7,
-      withTiming(0, { duration: duration * 0.3 })
+    // Subtle horizontal drift
+    xVal.value = withDelay(
+      delay,
+      withTiming(startX + drift, {
+        duration,
+        easing: Easing.inOut(Easing.quad),
+      })
     );
 
-    // Continuous rotation
+    // Soft fade near the bottom
+    opacity.value = withDelay(
+      delay + duration * 0.65,
+      withTiming(0, { duration: duration * 0.35 })
+    );
+
+    // Gentle tumbling rotation
     rotation.value = withDelay(
       delay,
       withRepeat(
         withTiming(360, {
-          duration: Math.random() * 1000 + 1000,
+          duration: Math.random() * 800 + 1200,
           easing: Easing.linear,
         }),
         -1,
@@ -73,16 +84,14 @@ const ConfettiPiece: React.FC<ConfettiPieceProps> = ({ index }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateY: yVal.value },
-        { translateX: xVal.value },
-        { rotate: `${rotation.value}deg` },
-      ],
-      opacity: opacity.value,
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: yVal.value },
+      { translateX: xVal.value },
+      { rotate: `${rotation.value}deg` },
+    ],
+    opacity: opacity.value,
+  }));
 
   return (
     <Animated.View
@@ -91,24 +100,22 @@ const ConfettiPiece: React.FC<ConfettiPieceProps> = ({ index }) => {
         animatedStyle,
         {
           width: size,
-          height: size * (isCircle ? 1 : 1.4),
+          height: isRound ? size : size * 1.3,
           backgroundColor: color,
-          borderRadius: isCircle ? size / 2 : 3,
+          borderRadius: isRound ? size / 2 : 2,
         },
       ]}
     />
   );
 };
 
-export const Confetti: React.FC = () => {
-  return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      {Array.from({ length: CONFETTI_COUNT }).map((_, index) => (
-        <ConfettiPiece key={index} index={index} />
-      ))}
-    </View>
-  );
-};
+export const Confetti: React.FC = () => (
+  <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    {Array.from({ length: CONFETTI_COUNT }).map((_, index) => (
+      <ConfettiPiece key={index} index={index} />
+    ))}
+  </View>
+);
 
 export const WaterDropletBurst = Confetti;
 
@@ -121,6 +128,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Confetti;
+export default React.memo(Confetti);
+
 
 
