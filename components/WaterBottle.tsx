@@ -1,4 +1,5 @@
-import { BEVERAGES, BeverageType } from "../constants/beverages";
+import { BEVERAGES } from "../constants";
+import { BeverageType } from "../types";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Easing } from "react-native";
 import Svg, {

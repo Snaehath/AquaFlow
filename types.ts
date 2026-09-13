@@ -51,4 +51,3 @@ export interface DailyHistoryEntry {
   volume: number;
 }
 
-export { DEFAULT_PROFILE } from "./constants";

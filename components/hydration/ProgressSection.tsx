@@ -1,9 +1,9 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { Droplets, Flame, Compass } from "lucide-react-native";
+import { Droplets, Flame } from "lucide-react-native";
 import Animated from "react-native-reanimated";
 import WaterBottle from "../WaterBottle";
-import { BeverageType } from "../../constants/beverages";
+import { BeverageType } from "@/types";
 import { hapticLight } from "@/utils/haptics";
 
 interface ProgressSectionProps {

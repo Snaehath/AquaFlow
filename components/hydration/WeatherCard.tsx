@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Animated } from "react-native";
-import { Thermometer, Sun, Flame, Sparkles } from "lucide-react-native";
+import { Thermometer, Flame } from "lucide-react-native";
 import { WeatherState, UserProfile } from "@/types";
 
 interface WeatherCardProps {

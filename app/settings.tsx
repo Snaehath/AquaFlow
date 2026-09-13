@@ -1,17 +1,3 @@
-import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Modal,
-  Pressable,
-  ScrollView,
-  Share,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import {
   Activity,
@@ -29,14 +15,27 @@ import {
   X,
   Zap,
 } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  Share,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { UserProfile } from "@/types";
-import { ACHIEVEMENTS_DATA } from "../constants/achievements";
-import { DEFAULT_PROFILE } from "../constants";
+import { ACHIEVEMENTS_DATA, DEFAULT_PROFILE } from "../constants";
 import { getProfile, saveProfile } from "../services/ProfileService";
 import { useHydrationStore } from "../store/hydrationStore";
-import { calculateBaseGoal } from "../utils/hydration";
 import { hapticLight, hapticMedium } from "../utils/haptics";
+import { calculateBaseGoal } from "../utils/hydration";
 
 const Settings = () => {
   const router = useRouter();
@@ -463,7 +462,14 @@ const Settings = () => {
           </View>
 
           {/* Symmetrical 2x2 Grid */}
-          <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 12 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+              rowGap: 12,
+            }}
+          >
             {ACHIEVEMENTS_DATA.map((ach) => {
               const isUnlocked = unlockedAchievements.includes(ach.id);
               return (

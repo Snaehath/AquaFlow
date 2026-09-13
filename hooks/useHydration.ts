@@ -5,14 +5,13 @@ import { getProfile } from "../services/ProfileService";
 
 // state & types
 import { useHydrationStore } from "@/store/hydrationStore";
-import { WeatherState, UserProfile } from "@/types";
+import { WeatherState, UserProfile, BeverageType } from "@/types";
 
 // hooks & router
 import { useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 
 // constants & utils
-import { BeverageType } from "../constants/beverages";
 import { 
   calculateProgress, 
   calculateCompletedBottles, 
@@ -28,6 +27,8 @@ const useHydration = () => {
   const logs = useHydrationStore((s) => s.logs);
   const streak = useHydrationStore((s) => s.streak);
   const weeklyVolume = useHydrationStore((s) => s.weeklyVolume);
+  const weeklyHistory = useHydrationStore((s) => s.weeklyHistory);
+  const unlockedAchievements = useHydrationStore((s) => s.unlockedAchievements);
   const addIntakeAction = useHydrationStore((s) => s.addIntake);
   const removeLogAction = useHydrationStore((s) => s.removeLog);
   const resetIntakeAction = useHydrationStore((s) => s.resetIntake);
@@ -89,7 +90,7 @@ const useHydration = () => {
     actualIntake: Math.round(intake),
     logs,
     addIntake: (amount: number, type: BeverageType = "water") =>
-      addIntakeAction(amount, type, effectiveGoal, weatherMultiplier),
+      addIntakeAction(amount, type, effectiveGoal),
     removeLog: removeLogAction,
     resetIntake: resetIntakeAction,
     profile,
@@ -100,16 +101,15 @@ const useHydration = () => {
 
     streak,
     weeklyVolume: Math.round(weeklyVolume),
-    weeklyHistory: useHydrationStore((s) => s.weeklyHistory),
+    weeklyHistory,
     completedBottles: calculateCompletedBottles(Math.round(intake), effectiveGoal),
     progress: calculateProgress(Math.round(intake), effectiveGoal),
     isGoalReached: Math.round(intake) >= effectiveGoal,
     lastBeverageType:
       logs.length > 0 ? logs[0].type : ("water" as BeverageType),
-    unlockedAchievements: useHydrationStore((s) => s.unlockedAchievements),
+    unlockedAchievements,
   };
 };
-
 
 export { useHydration };
 

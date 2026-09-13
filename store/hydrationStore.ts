@@ -4,14 +4,13 @@ import {
   sendGoalCelebration,
 } from "@/services/NotificationService";
 import { mmkvStorage } from "@/services/storage";
-import { HydrationLog, QuickPreset } from "@/types";
+import { BeverageType, DailyHistoryEntry, HydrationLog, QuickPreset } from "@/types";
 
 // libraries
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 // constants & utils
-import { BeverageType } from "../constants/beverages";
 import { checkAchievements } from "@/services/AchievementService";
 import { getTodayString, getYesterdayString, getWeekStart } from "@/utils/date";
 import { 
@@ -27,11 +26,6 @@ export const DEFAULT_QUICK_PRESETS: QuickPreset[] = [
   { id: "preset_3", label: "Bottle", amount: 500, type: "water" },
   { id: "preset_4", label: "Power", amount: 500, type: "electrolyte" },
 ];
-
-export interface DailyHistoryEntry {
-  date: string;
-  volume: number;
-}
 
 // store interface
 interface HydrationStore {
@@ -55,7 +49,6 @@ interface HydrationStore {
     amount: number,
     type?: BeverageType,
     effectiveGoal?: number,
-    weatherMultiplier?: number,
   ) => Promise<void>;
   removeLog: (id: string) => void;
   resetIntake: () => void;
@@ -188,7 +181,6 @@ export const useHydrationStore = create<HydrationStore>()(
         amount,
         type = "water",
         effectiveGoal = 2000,
-        weatherMultiplier = 1.0,
       ) => {
         const effectiveAmount = calculateEffectiveAmount(amount, type);
         const today = getTodayString();
@@ -225,13 +217,11 @@ export const useHydrationStore = create<HydrationStore>()(
         checkAchievements(
           state.unlockedAchievements,
           {
-            newIntake,
             newBottleCount: calculateCompletedBottles(newIntake, effectiveGoal),
             streak: state.streak,
             logsCount: state.logs.length,
           },
           state.unlockAchievement,
-          state.hapticsEnabled
         );
 
       },

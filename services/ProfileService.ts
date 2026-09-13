@@ -17,9 +17,3 @@ export const saveProfile = async (profile: UserProfile): Promise<void> => {
   mmkvStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 };
 
-export const calculateBaseGoal = (profile: UserProfile): number => {
-  // Basic health formula: 33ml per kg of body weight
-  // Adjusted by activity level
-  const baseIntake = profile.weight * 33;
-  return Math.round(baseIntake * profile.activityLevel);
-};

@@ -31,11 +31,12 @@ export const REMINDER_MESSAGES: string[] = [
   "Pure water, pure health. Take a quick hydration break! 💎",
 ];
 
-export const HEAT_MESSAGES: string[] = [
-  "It's hot outside! ☀️ Extra hydration needed today.",
-  "Heatwave alert! 🌡️ Stay cool with some fresh water.",
-  "Don't let the heat get to you. Keep sipping! 🧊",
-  "High temperatures today. Your goal is adjusted for safety. 💧",
+export const BEVERAGE_TYPES: BeverageType[] = [
+  "water",
+  "coffee",
+  "tea",
+  "juice",
+  "electrolyte",
 ];
 
 // Beverage Multipliers & Palette

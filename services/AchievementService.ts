@@ -1,22 +1,20 @@
 // constants & services
-import { ACHIEVEMENTS_DATA } from "../constants/achievements";
+import { ACHIEVEMENTS_DATA } from "@/constants";
 import { sendAchievementUnlocked } from "./NotificationService";
-import * as Haptics from "expo-haptics";
+import { hapticSuccess } from "@/utils/haptics";
 import { useToastStore } from "@/store/toastStore";
 
 // achievement logic
 export const checkAchievements = (
   unlockedIds: string[],
   stats: {
-    newIntake: number;
     newBottleCount: number;
     streak: number;
     logsCount: number;
   },
   onUnlock: (id: string) => void,
-  hapticsEnabled: boolean
 ) => {
-  const { streak, logsCount, newBottleCount, newIntake } = stats;
+  const { streak, logsCount, newBottleCount } = stats;
 
   const potentialUnlocks: string[] = [];
 
@@ -37,12 +35,10 @@ export const checkAchievements = (
   }
 
   potentialUnlocks.forEach((id) => {
-    const achievement = ACHIEVEMENTS_DATA.find(a => a.id === id);
+    const achievement = ACHIEVEMENTS_DATA.find((a) => a.id === id);
     if (achievement) {
       onUnlock(id);
-      if (hapticsEnabled) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
+      hapticSuccess();
       sendAchievementUnlocked(achievement.title, achievement.description);
       
       // Trigger in-app toast notification

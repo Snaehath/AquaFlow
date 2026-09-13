@@ -4,7 +4,6 @@ import {
   WAKING_START_HOUR,
   WAKING_END_HOUR,
   REMINDER_MESSAGES,
-  HEAT_MESSAGES,
 } from "../constants";
 
 export const WATER_REMINDER_CATEGORY = "water-reminder";
@@ -122,40 +121,6 @@ export const rescheduleAllReminders = async (intervalMinutes: number) => {
       await rescheduleAllReminders(nextInterval);
     }
   }
-};
-
-export const sendTestNotificationWithActions = async () => {
-  if (Platform.OS === "web") return;
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Time for Water! 💧",
-      body: "Tap an action button below (+250ml, +500ml, or Custom) to log your intake!",
-      sound: "default",
-      categoryIdentifier: WATER_REMINDER_CATEGORY,
-    },
-    trigger: null,
-  });
-};
-
-export const sendHeatAlertNotification = async () => {
-  if (Platform.OS === "web") return;
-  const heatMessage =
-    HEAT_MESSAGES[Math.floor(Math.random() * HEAT_MESSAGES.length)];
-
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Heatwave Alert 🌡️",
-      body: heatMessage,
-      sound: "default",
-      categoryIdentifier: WATER_REMINDER_CATEGORY,
-    },
-    trigger: null,
-  });
-};
-
-
-export const cancelAllPending = async () => {
-  await Notifications.cancelAllScheduledNotificationsAsync();
 };
 
 export const sendGoalCelebration = async () => {

@@ -116,3 +116,28 @@ export const hapticCelebration = async () => {
     /* Ignore */
   }
 };
+
+/**
+ * Trigger success notification feedback (achievement unlocked, etc.)
+ */
+export const hapticSuccess = async () => {
+  if (!isHapticsEnabled()) return;
+  try {
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  } catch {
+    /* Ignore */
+  }
+};
+
+/**
+ * Trigger warning notification feedback (undo log, reset intake, etc.)
+ */
+export const hapticWarning = async () => {
+  if (!isHapticsEnabled()) return;
+  try {
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+  } catch {
+    /* Ignore */
+  }
+};
+

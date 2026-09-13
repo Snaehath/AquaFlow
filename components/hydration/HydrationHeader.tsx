@@ -1,5 +1,6 @@
 import { useHydrationStore } from "@/store/hydrationStore";
 import { hapticLight } from "@/utils/haptics";
+import { formatDate } from "@/utils/date";
 import { useRouter } from "expo-router";
 import { Flame, History, Settings, Sparkles, X } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
@@ -56,11 +57,7 @@ const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
           <Text className="text-sky-950 text-2xl font-black">AquaFlow</Text>
           <View className="flex-row items-center">
             <Text className="text-sky-600 text-xs font-bold uppercase tracking-tighter">
-              {new Date().toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              })}
+              {formatDate(new Date())}
             </Text>
             {streak > 0 && (
               <Pressable

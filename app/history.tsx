@@ -2,21 +2,18 @@ import { useRouter } from "expo-router";
 import {
   Calendar,
   ChevronLeft,
-  Coffee,
   Droplets,
-  GlassWater,
   History as HistoryIcon,
-  Sparkles,
   Trash2,
-  Zap,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { DimensionValue, FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BEVERAGES } from "../constants/beverages";
+import { BEVERAGES, BEVERAGE_TYPES } from "../constants";
 import { useHydration } from "../hooks/useHydration";
 import { HydrationLog, BeverageType } from "../types";
 import { hapticLight } from "../utils/haptics";
+import { BEVERAGE_ICONS } from "../components/QuickAdd";
 
 // Helper to calculate days from Monday to Sunday of the current week
 const getWeeklyDays = () => {
@@ -40,14 +37,6 @@ const getWeeklyDays = () => {
     });
   }
   return days;
-};
-
-const BEVERAGE_ICONS: Record<BeverageType, React.ElementType> = {
-  water: Droplets,
-  coffee: Coffee,
-  tea: GlassWater,
-  juice: Sparkles,
-  electrolyte: Zap,
 };
 
 const History = () => {
@@ -231,7 +220,7 @@ const History = () => {
 
             {/* Distribution Stacked Bar */}
             <View className="h-3 w-full bg-sky-50 rounded-full flex-row overflow-hidden mb-4">
-              {(["water", "coffee", "tea", "juice", "electrolyte"] as BeverageType[]).map((bev) => {
+              {BEVERAGE_TYPES.map((bev) => {
                 const totalRaw = logs.reduce((acc, l) => acc + l.amount, 0);
                 const bVol = logs.filter((l) => l.type === bev).reduce((acc, l) => acc + l.amount, 0);
                 const pct = totalRaw > 0 ? (bVol / totalRaw) * 100 : 0;
@@ -252,7 +241,7 @@ const History = () => {
 
             {/* Legend Chips */}
             <View className="flex-row flex-wrap gap-2">
-              {(["water", "coffee", "tea", "juice", "electrolyte"] as BeverageType[]).map((bev) => {
+              {BEVERAGE_TYPES.map((bev) => {
                 const totalRaw = logs.reduce((acc, l) => acc + l.amount, 0);
                 const bVol = logs.filter((l) => l.type === bev).reduce((acc, l) => acc + l.amount, 0);
                 const pct = totalRaw > 0 ? Math.round((bVol / totalRaw) * 100) : 0;

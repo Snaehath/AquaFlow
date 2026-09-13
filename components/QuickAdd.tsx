@@ -22,7 +22,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BeverageType, QuickPreset } from "../types";
-import { BEVERAGES } from "../constants/beverages";
+import { BEVERAGES, BEVERAGE_TYPES } from "../constants";
 import { useHydrationStore } from "../store/hydrationStore";
 import { hapticLight, hapticMedium } from "../utils/haptics";
 
@@ -31,7 +31,7 @@ type Props = {
   onOpenCustom?: () => void;
 };
 
-const BEVERAGE_ICONS: Record<BeverageType, React.ElementType> = {
+export const BEVERAGE_ICONS: Record<BeverageType, React.ElementType> = {
   water: Droplets,
   coffee: Coffee,
   tea: GlassWater,
@@ -48,7 +48,7 @@ const BEVERAGE_BG: Record<BeverageType, { bg: string; iconColor: string; border:
 };
 
 const PRESET_AMOUNTS = [150, 250, 330, 500, 750, 1000];
-const BEVERAGE_OPTIONS: BeverageType[] = ["water", "coffee", "tea", "juice", "electrolyte"];
+const BEVERAGE_OPTIONS = BEVERAGE_TYPES;
 
 const QuickAdd = ({ onAdd, onOpenCustom }: Props) => {
   const insets = useSafeAreaInsets();

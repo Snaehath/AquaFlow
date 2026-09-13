@@ -20,9 +20,10 @@ import {
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BeverageType } from "@/types";
-import { BEVERAGES } from "@/constants/beverages";
+import { BEVERAGES, BEVERAGE_TYPES } from "@/constants";
 import { calculateEffectiveAmount } from "@/utils/hydration";
 import { hapticLight, hapticHeavy } from "@/utils/haptics";
+import { BEVERAGE_ICONS } from "../QuickAdd";
 
 interface CustomLogModalProps {
   visible: boolean;
@@ -32,14 +33,6 @@ interface CustomLogModalProps {
 
 const PRESETS = [150, 250, 350, 500, 750];
 
-const BEVERAGE_ICONS: Record<BeverageType, React.ElementType> = {
-  water: Droplets,
-  coffee: Coffee,
-  tea: GlassWater,
-  juice: Sparkles,
-  electrolyte: Zap,
-};
-
 const BEVERAGE_COLORS: Record<BeverageType, { color: string; bg: string }> = {
   water: { color: "#0ea5e9", bg: "bg-sky-50" },
   coffee: { color: "#d97706", bg: "bg-amber-50" },
@@ -47,14 +40,6 @@ const BEVERAGE_COLORS: Record<BeverageType, { color: string; bg: string }> = {
   juice: { color: "#ea580c", bg: "bg-orange-50" },
   electrolyte: { color: "#0891b2", bg: "bg-cyan-50" },
 };
-
-const BEVERAGE_TYPES: BeverageType[] = [
-  "water",
-  "coffee",
-  "tea",
-  "juice",
-  "electrolyte",
-];
 
 const CustomLogModal: React.FC<CustomLogModalProps> = ({
   visible,

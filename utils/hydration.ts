@@ -1,6 +1,6 @@
 // types & constants
-import { BeverageType, BEVERAGES } from "../constants/beverages";
-import { UserProfile } from "@/types";
+import { BEVERAGES } from "../constants";
+import { BeverageType, UserProfile } from "@/types";
 
 // hydration calculations
 export const calculateEffectiveAmount = (amount: number, type: BeverageType): number => {

@@ -1,12 +1,9 @@
 // libraries
-import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
   ScrollView,
-  Text,
   View,
 } from "react-native";
 import {
@@ -24,7 +21,8 @@ import { useHydration } from "../hooks/useHydration";
 import * as SplashScreen from "expo-splash-screen";
 
 // constants & components
-import { BeverageType } from "../constants/beverages";
+import { BeverageType } from "@/types";
+import { hapticWarning } from "@/utils/haptics";
 import QuickAdd from "../components/QuickAdd";
 
 // hydration components
@@ -128,9 +126,7 @@ const Dashboard = () => {
   const handleUndo = useCallback(() => {
     if (logs.length > 0) {
       removeLog(logs[0].id);
-      if (useHydrationStore.getState().hapticsEnabled) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      }
+      hapticWarning();
     }
   }, [logs, removeLog]);
 
@@ -152,9 +148,7 @@ const Dashboard = () => {
   );
 
   const handleReset = useCallback(() => {
-    if (useHydrationStore.getState().hapticsEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    }
+    hapticWarning();
     Alert.alert(
       "Reset today's intake?",
       "This will permanently clear all logs for today. This cannot be undone.",
