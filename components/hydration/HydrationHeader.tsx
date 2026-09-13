@@ -2,7 +2,7 @@ import { useHydrationStore } from "@/store/hydrationStore";
 import { hapticLight } from "@/utils/haptics";
 import { formatDate } from "@/utils/date";
 import { useRouter } from "expo-router";
-import { Flame, History, Settings, Sparkles, X } from "lucide-react-native";
+import { Droplets, History, Settings, Sparkles, X } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Modal, Pressable, Text, View } from "react-native";
 
@@ -12,14 +12,12 @@ interface HydrationHeaderProps {
 
 const getMotivation = (streak: number): string => {
   if (streak <= 1)
-    return "Start strong! Every drop counts toward your healthy habit.";
+    return "Every drink is a positive step. Start fresh today.";
   if (streak < 3)
-    return "Consistency is building! Keep the momentum alive today.";
+    return "Your hydration rhythm is steady and natural.";
   if (streak < 7)
-    return "Incredible flow! You're creating an unbreakable routine.";
-  if (streak < 14)
-    return "Champion tier! Your body is loving this healthy streak.";
-  return "Legendary hydrator! You've mastered daily water intake.";
+    return "You've been consistent this week. Keep flowing at your own pace.";
+  return "Wonderful rhythm! You've built a calm, healthy routine.";
 };
 
 const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
@@ -65,13 +63,13 @@ const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
                 style={({ pressed }) => [
                   { transform: [{ scale: pressed ? 0.94 : 1 }] },
                 ]}
-                className="bg-orange-100 px-2.5 py-0.5 rounded-full ml-2 flex-row items-center active:bg-orange-200"
+                className="bg-sky-100/80 px-2.5 py-0.5 rounded-full ml-2 flex-row items-center active:bg-sky-200"
               >
                 <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-                  <Flame size={11} color="#f97316" fill="#f97316" />
+                  <Droplets size={11} color="#0284c7" />
                 </Animated.View>
-                <Text className="text-orange-600 text-[10px] font-black ml-1">
-                  {streak} DAY STREAK
+                <Text className="text-sky-800 text-[10px] font-black ml-1">
+                  {streak} Day Rhythm
                 </Text>
               </Pressable>
             )}
@@ -105,11 +103,11 @@ const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
             {/* Header / Dismiss */}
             <View className="w-full flex-row justify-between items-center mb-4">
               <View className="flex-row items-center">
-                <View className="bg-orange-100 p-2 rounded-xl mr-2.5">
-                  <Flame size={20} color="#ea580c" fill="#ea580c" />
+                <View className="bg-sky-100 p-2 rounded-xl mr-2.5">
+                  <Droplets size={20} color="#0284c7" />
                 </View>
                 <Text className="text-sky-950 font-black text-lg">
-                  Streak Health
+                  Hydration Rhythm
                 </Text>
               </View>
               <Pressable
@@ -122,20 +120,20 @@ const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
 
             {/* Streak Metrics Cards */}
             <View className="flex-row gap-3 w-full my-3">
-              <View className="flex-1 bg-orange-50 border border-orange-200/70 p-4 rounded-2xl items-center">
-                <Text className="text-orange-500 text-[10px] font-black uppercase tracking-wider">
-                  Current Streak
+              <View className="flex-1 bg-sky-50 border border-sky-200/70 p-4 rounded-2xl items-center">
+                <Text className="text-sky-600 text-[10px] font-black uppercase tracking-wider">
+                  Current Rhythm
                 </Text>
-                <Text className="text-orange-600 text-3xl font-black mt-1">
+                <Text className="text-sky-950 text-3xl font-black mt-1">
                   {streak} <Text className="text-sm font-bold">Days</Text>
                 </Text>
               </View>
 
-              <View className="flex-1 bg-sky-50 border border-sky-200/70 p-4 rounded-2xl items-center">
+              <View className="flex-1 bg-sky-50/60 border border-sky-100 p-4 rounded-2xl items-center">
                 <Text className="text-sky-500 text-[10px] font-black uppercase tracking-wider">
-                  Best Record
+                  Longest Rhythm
                 </Text>
-                <Text className="text-sky-700 text-3xl font-black mt-1">
+                <Text className="text-sky-800 text-3xl font-black mt-1">
                   {longestStreak}{" "}
                   <Text className="text-sm font-bold">Days</Text>
                 </Text>
@@ -147,7 +145,7 @@ const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
               <View className="flex-row items-center mb-1">
                 <Sparkles size={14} color="#0284c7" />
                 <Text className="text-sky-950 font-black text-xs ml-1.5">
-                  Daily Consistency
+                  Natural Flow
                 </Text>
               </View>
               <Text className="text-sky-700 text-xs leading-5">
@@ -161,7 +159,7 @@ const HydrationHeader: React.FC<HydrationHeaderProps> = ({ streak }) => {
               className="bg-sky-500 active:bg-sky-600 py-3.5 px-6 rounded-2xl items-center justify-center w-full mt-5 shadow-sm"
             >
               <Text className="text-white font-black text-sm">
-                Stay Hydrated
+                Got it
               </Text>
             </Pressable>
           </View>

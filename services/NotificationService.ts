@@ -76,6 +76,11 @@ export const rescheduleAllReminders = async (intervalMinutes: number) => {
     // 1. Clear previous scheduled notifications
     await Notifications.cancelAllScheduledNotificationsAsync();
 
+    // If notifications turned off (<= 0), stop here
+    if (intervalMinutes <= 0) {
+      return;
+    }
+
     // 2. Schedule daily repeating reminders for waking hours (WAKING_START_HOUR to WAKING_END_HOUR)
     let currentOffsetMinutes = 0;
     const totalMinutes = (WAKING_END_HOUR - WAKING_START_HOUR) * 60;

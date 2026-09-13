@@ -11,7 +11,7 @@ import { DimensionValue, FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BEVERAGES, BEVERAGE_TYPES } from "../constants";
 import { useHydration } from "../hooks/useHydration";
-import { HydrationLog, BeverageType } from "../types";
+import { HydrationLog } from "../types";
 import { hapticLight } from "../utils/haptics";
 import { BEVERAGE_ICONS } from "../components/QuickAdd";
 
@@ -215,7 +215,7 @@ const History = () => {
         <View className="px-6 mb-6">
           <View className="bg-white p-5 rounded-4xl border border-sky-100 shadow-sm">
             <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest mb-3 px-1">
-              Today's Fluid Diversity
+              {"Today's Fluid Diversity"}
             </Text>
 
             {/* Distribution Stacked Bar */}
@@ -247,7 +247,6 @@ const History = () => {
                 const pct = totalRaw > 0 ? Math.round((bVol / totalRaw) * 100) : 0;
                 if (bVol <= 0) return null;
 
-                const Icon = BEVERAGE_ICONS[bev];
                 const config = BEVERAGES[bev];
 
                 return (

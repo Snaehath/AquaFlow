@@ -7,7 +7,6 @@ import {
   Minus,
   Plus,
   Save,
-  Share2,
   Sliders,
   Smartphone,
   Trash2,
@@ -23,7 +22,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  Share,
   Text,
   TextInput,
   View,
@@ -54,10 +52,17 @@ const Settings = () => {
   );
   const storeHapticsEnabled = useHydrationStore((s) => s.hapticsEnabled);
   const setStoreHapticsEnabled = useHydrationStore((s) => s.setHapticsEnabled);
+  const storeCelebrationLevel = useHydrationStore((s) => s.celebrationLevel);
+  const setStoreCelebrationLevel = useHydrationStore(
+    (s) => s.setCelebrationLevel,
+  );
   const clearAllData = useHydrationStore((s) => s.clearAllData);
 
-  const [interval, setIntervalState] = useState(60);
+  const [interval, setIntervalState] = useState(90);
   const [haptics, setHaptics] = useState(true);
+  const [celebrationLevel, setCelebrationLevelState] = useState<
+    "full" | "subtle" | "off"
+  >("subtle");
 
   useEffect(() => {
     const load = async () => {
@@ -68,11 +73,14 @@ const Settings = () => {
         setActivity(p.activityLevel || 1);
         setTempUnit(p.tempUnit || "F");
       }
-      setIntervalState(storeReminderInterval || 60);
+      setIntervalState(
+        storeReminderInterval !== undefined ? storeReminderInterval : 90,
+      );
       setHaptics(storeHapticsEnabled ?? true);
+      setCelebrationLevelState(storeCelebrationLevel || "subtle");
     };
     load();
-  }, [storeReminderInterval, storeHapticsEnabled]);
+  }, [storeReminderInterval, storeHapticsEnabled, storeCelebrationLevel]);
 
   const parsedWeight = parseFloat(weight) || 70;
   const simulatedGoal = calculateBaseGoal({
@@ -110,6 +118,7 @@ const Settings = () => {
     await saveProfile(newProfile);
     await setStoreReminderInterval(interval);
     setStoreHapticsEnabled(haptics);
+    setStoreCelebrationLevel(celebrationLevel);
     setIsSaving(false);
     Alert.alert("Saved! 💧", "Your hydration profile has been updated.", [
       { text: "OK", onPress: () => router.back() },
@@ -272,16 +281,16 @@ const Settings = () => {
             </View>
           </View>
 
-          {/* Reminder Interval */}
+          {/* Reminder Frequency */}
           <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
-            Reminder Frequency (Waking Hours)
+            Reminders
           </Text>
-          <View className="flex-row gap-2 mb-5">
+          <View className="flex-row gap-2 mb-2">
             {[
-              { label: "30m", value: 30 },
-              { label: "1h", value: 60 },
-              { label: "2h", value: 120 },
-              { label: "3h", value: 180 },
+              { label: "Every 90m", value: 90 },
+              { label: "Every 2h", value: 120 },
+              { label: "Every 3h", value: 180 },
+              { label: "Off", value: 0 },
             ].map((opt) => {
               const isSelected = interval === opt.value;
               return (
@@ -290,6 +299,44 @@ const Settings = () => {
                   onPress={() => {
                     hapticLight();
                     setIntervalState(opt.value);
+                  }}
+                  style={{
+                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                  }}
+                  className="flex-1 py-2.5 rounded-2xl border items-center shadow-sm"
+                >
+                  <Text
+                    style={{ color: isSelected ? "#ffffff" : "#082f49" }}
+                    className="text-xs font-black"
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Text className="text-sky-400 text-[11px] mb-5 leading-4">
+            Gentle reminders throughout your waking hours (Quiet hours: 10:00 PM → 8:00 AM).
+          </Text>
+
+          {/* Celebration Intensity */}
+          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
+            Celebrations
+          </Text>
+          <View className="flex-row gap-2 mb-5">
+            {[
+              { label: "Subtle", value: "subtle" },
+              { label: "Full", value: "full" },
+              { label: "Off", value: "off" },
+            ].map((opt) => {
+              const isSelected = celebrationLevel === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => {
+                    hapticLight();
+                    setCelebrationLevelState(opt.value as any);
                   }}
                   style={{
                     backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
@@ -570,29 +617,6 @@ const Settings = () => {
             </View>
           </View>
 
-          {/* Share App Button */}
-          <Pressable
-            onPress={async () => {
-              try {
-                await Share.share({
-                  message:
-                    "Stay hydrated with AquaFlow! The premium water tracking app. 💧",
-                });
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-            className="flex-row items-center justify-between py-3.5 border-b border-sky-50 active:opacity-60"
-          >
-            <View className="flex-row items-center">
-              <Share2 size={16} color="#0284c7" />
-              <Text className="text-sky-900 font-bold text-sm ml-2.5">
-                Share AquaFlow
-              </Text>
-            </View>
-            <Text className="text-sky-400 text-xs font-bold">Invite</Text>
-          </Pressable>
-
           {/* Wipe Data Button */}
           <Pressable
             onPress={() => {
@@ -716,20 +740,11 @@ const Settings = () => {
 
                       {isUnlocked && (
                         <Pressable
-                          onPress={async () => {
-                            try {
-                              await Share.share({
-                                message: `I just unlocked the "${selectedAch.title}" badge on AquaFlow! 💧🏅\n${selectedAch.description}\nTrack your hydration with AquaFlow!`,
-                              });
-                            } catch (e) {
-                              console.error(e);
-                            }
-                          }}
+                          onPress={() => setModalVisible(false)}
                           className="flex-row items-center justify-center bg-sky-500 active:bg-sky-600 p-3.5 rounded-2xl shadow-sm"
                         >
-                          <Share2 size={16} color="white" />
-                          <Text className="text-white font-black text-xs ml-2">
-                            Share Achievement
+                          <Text className="text-white font-black text-xs">
+                            Done
                           </Text>
                         </Pressable>
                       )}

@@ -8,16 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import {
-  Droplets,
-  Coffee,
-  GlassWater,
-  Sparkles,
-  Zap,
-  Check,
-  X,
-  Info,
-} from "lucide-react-native";
+import { Check, X, Info } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BeverageType } from "@/types";
 import { BEVERAGES, BEVERAGE_TYPES } from "@/constants";

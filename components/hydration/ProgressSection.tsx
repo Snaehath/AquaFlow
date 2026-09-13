@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { Droplets, Flame } from "lucide-react-native";
+import { Droplets } from "lucide-react-native";
 import Animated from "react-native-reanimated";
 import WaterBottle from "../WaterBottle";
 import { BeverageType } from "@/types";
@@ -20,16 +20,16 @@ interface ProgressSectionProps {
 const getIntradayPacing = (intakeRatio: number): { text: string; bg: string; textCol: string } => {
   const currentHour = new Date().getHours();
   if (intakeRatio >= 1.0) {
-    return { text: "Daily Goal Smashed! 🏆 Keep flowing", bg: "bg-emerald-50 border-emerald-200/80", textCol: "text-emerald-700" };
+    return { text: "Hydration target reached 💧 Take care today", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-800" };
   }
   if (currentHour < 12) {
-    return { text: "Morning Pace: Aim for ~35% by noon 🌅", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-700" };
+    return { text: "Morning Rhythm: A few gentle sips to start your day 🌅", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-700" };
   } else if (currentHour < 17) {
-    return { text: "Afternoon Boost: 65% suggested by 5 PM ⚡", bg: "bg-cyan-50 border-cyan-100", textCol: "text-cyan-800" };
+    return { text: "Afternoon: A small glass whenever you're ready ⚡", bg: "bg-cyan-50 border-cyan-100", textCol: "text-cyan-800" };
   } else if (currentHour < 21) {
-    return { text: "Evening Flow: Gentle sips to reach goal 🌙", bg: "bg-indigo-50 border-indigo-100", textCol: "text-indigo-700" };
+    return { text: "Evening: Gentle sips as your day winds down 🌙", bg: "bg-indigo-50 border-indigo-100", textCol: "text-indigo-700" };
   } else {
-    return { text: "Night Wind-down: Light sips before sleep 💤", bg: "bg-purple-50 border-purple-100", textCol: "text-purple-700" };
+    return { text: "Night: Light sips before sleep 💤", bg: "bg-purple-50 border-purple-100", textCol: "text-purple-700" };
   }
 };
 
@@ -81,10 +81,8 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
         className="items-center mt-1"
       >
         <Text className="text-sky-950 text-4xl font-black">
-          {actualIntake > 0 && actualIntake % effectiveGoal === 0
-            ? effectiveGoal
-            : actualIntake % effectiveGoal}
-          <Text className="text-lg text-sky-300 font-medium">
+          {actualIntake}
+          <Text className="text-lg text-sky-400 font-medium">
             {" "}
             / {effectiveGoal} ml
           </Text>
@@ -92,9 +90,9 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
 
         <View className="flex-row items-center mt-2 gap-2">
           <View className="flex-row items-center bg-sky-100/60 px-3 py-1.5 rounded-full">
-            <Flame size={13} color="#0ea5e9" fill="#0ea5e9" />
+            <Droplets size={13} color="#0ea5e9" />
             <Text className="text-sky-900 text-[10px] font-bold ml-1.5">
-              {completedBottles} Bottles
+              {completedBottles} {completedBottles === 1 ? "Bottle" : "Bottles"}
             </Text>
           </View>
           <View className={`px-3 py-1.5 rounded-full border ${pacing.bg}`}>

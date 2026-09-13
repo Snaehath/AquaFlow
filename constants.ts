@@ -19,16 +19,14 @@ export const WAKING_START_HOUR = 8; // 8:00 AM
 export const WAKING_END_HOUR = 22; // 10:00 PM
 
 export const REMINDER_MESSAGES: string[] = [
-  "Time for a quick sip! Keep your flow going. 💧",
-  "Stay sharp, stay hydrated! 🌊",
-  "Your body will thank you for this water break. ✨",
-  "Hydration is the secret to focus. Take a drink! 🧠",
-  "Is your water bottle empty? Time for a refill! 🍼",
-  "Fuel your energy! A glass of water works wonders. ⚡",
-  "Beat tiredness with a fresh sip of water. 🧊",
-  "Keep that hydration streak alive! 🏆",
-  "Hydrate now, feel amazing all day! 🌟",
-  "Pure water, pure health. Take a quick hydration break! 💎",
+  "A small sip might feel good right now. 💧",
+  "Take your time and stay refreshed. 🌊",
+  "A gentle pause for a glass of water. ✨",
+  "A little refresh whenever you're ready. 🌿",
+  "Water break whenever you'd like. 💎",
+  "A quiet moment to hydrate. 🧊",
+  "Enjoying your day? Here's a gentle reminder to sip. 💧",
+  "Keep your natural flow going. 🌟",
 ];
 
 export const BEVERAGE_TYPES: BeverageType[] = [
@@ -102,9 +100,9 @@ export const ACHIEVEMENTS_DATA: Achievement[] = [
     image: require("./assets/badges/consistency.png"),
   },
   {
-    id: "camel",
-    title: "Desert Camel",
-    description: "Complete 3 full bottles in one day.",
+    id: "consistent_flow",
+    title: "Consistent Flow",
+    description: "Reached your hydration target consistently across 7 days.",
     icon: Trophy,
     image: require("./assets/badges/camel.png"),
   },

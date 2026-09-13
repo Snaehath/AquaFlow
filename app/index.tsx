@@ -54,8 +54,7 @@ const Dashboard = () => {
   } = useHydration();
 
   // store state
-  const alwaysNotify = useHydrationStore((s) => s.alwaysNotify);
-  const setAlwaysNotify = useHydrationStore((s) => s.setAlwaysNotify);
+  const celebrationLevel = useHydrationStore((s) => s.celebrationLevel);
 
   // local state & refs
   const [showCustomLog, setShowCustomLog] = useState(false);
@@ -73,34 +72,27 @@ const Dashboard = () => {
     }
   }, [isLoading]);
 
-  // Trigger Confetti on bottle completion
+  // Handle bottle completion with respect to celebration intensity
   useEffect(() => {
     if (completedBottles > prevCompletedBottles.current) {
-      setShowConfetti(true);
-      const timer = setTimeout(() => setShowConfetti(false), 5000);
+      if (celebrationLevel === "full") {
+        setShowConfetti(true);
+        const timer = setTimeout(() => setShowConfetti(false), 4000);
+        prevCompletedBottles.current = completedBottles;
+        return () => clearTimeout(timer);
+      } else if (celebrationLevel === "subtle") {
+        showToast({
+          title: "Bottle Completed 💧",
+          description: "Well hydrated today. Listen to what feels right.",
+          variant: "success",
+          duration: 3500,
+        });
+      }
       prevCompletedBottles.current = completedBottles;
-      return () => clearTimeout(timer);
     } else {
       prevCompletedBottles.current = completedBottles;
     }
-  }, [completedBottles]);
-
-  // Goal reached side effect
-  useEffect(() => {
-    if (isGoalReached && !alwaysNotify) {
-      Alert.alert(
-        "Goal Reached! 🏆",
-        "Congratulations! You've met your daily hydration goal. Would you like to keep receiving reminders to stay extra hydrated?",
-        [
-          { text: "No, I'm good", style: "cancel" },
-          {
-            text: "Yes, keep 'em coming",
-            onPress: () => setAlwaysNotify(true),
-          },
-        ],
-      );
-    }
-  }, [isGoalReached, alwaysNotify, setAlwaysNotify]);
+  }, [completedBottles, celebrationLevel, showToast]);
 
 
 

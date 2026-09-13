@@ -1,6 +1,5 @@
 // constants & services
 import { ACHIEVEMENTS_DATA } from "@/constants";
-import { sendAchievementUnlocked } from "./NotificationService";
 import { hapticSuccess } from "@/utils/haptics";
 import { useToastStore } from "@/store/toastStore";
 
@@ -30,8 +29,8 @@ export const checkAchievements = (
     potentialUnlocks.push("streak_3");
   }
 
-  if (!unlockedIds.includes("camel") && newBottleCount >= 3) {
-    potentialUnlocks.push("camel");
+  if (!unlockedIds.includes("consistent_flow") && streak >= 7) {
+    potentialUnlocks.push("consistent_flow");
   }
 
   potentialUnlocks.forEach((id) => {
@@ -39,16 +38,18 @@ export const checkAchievements = (
     if (achievement) {
       onUnlock(id);
       hapticSuccess();
-      sendAchievementUnlocked(achievement.title, achievement.description);
       
-      // Trigger in-app toast notification
+      // Differentiated in-app celebration without double-banner OS push notification
+      const isSevenDay = id === "consistent_flow";
+      const isFirstStep = id === "first_step";
+
       useToastStore.getState().showToast({
-        title: "Achievement Unlocked! 🏅",
-        description: `"${achievement.title}" - ${achievement.description}`,
+        title: isSevenDay ? "7-Day Rhythm Reached! 🌿" : isFirstStep ? "First Drink Logged 💧" : "Milestone Reached ✨",
+        description: `"${achievement.title}" — ${achievement.description}`,
         variant: "success",
         image: achievement.image,
         icon: achievement.icon,
-        duration: 5000,
+        duration: isSevenDay ? 5500 : isFirstStep ? 3500 : 4500,
       });
     }
   });

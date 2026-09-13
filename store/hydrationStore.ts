@@ -1,7 +1,6 @@
 // services & storage
 import {
   rescheduleAllReminders,
-  sendGoalCelebration,
 } from "@/services/NotificationService";
 import { mmkvStorage } from "@/services/storage";
 import { BeverageType, DailyHistoryEntry, HydrationLog, QuickPreset } from "@/types";
@@ -18,7 +17,7 @@ import {
   calculateCompletedBottles, 
   hasCrossedGoal 
 } from "@/utils/hydration";
-import { hapticBeverage, hapticCelebration, setGlobalHapticsEnabled } from "@/utils/haptics";
+import { hapticBeverage, hapticCelebration, hapticLight, setGlobalHapticsEnabled } from "@/utils/haptics";
 
 export const DEFAULT_QUICK_PRESETS: QuickPreset[] = [
   { id: "preset_1", label: "Glass", amount: 250, type: "water" },
@@ -41,6 +40,7 @@ interface HydrationStore {
   alwaysNotify: boolean;
   reminderInterval: number;
   hapticsEnabled: boolean;
+  celebrationLevel: "full" | "subtle" | "off";
   weeklyHistory: DailyHistoryEntry[];
   quickPresets: QuickPreset[];
 
@@ -57,6 +57,7 @@ interface HydrationStore {
   setAlwaysNotify: (enabled: boolean) => void;
   setReminderInterval: (minutes: number) => Promise<void>;
   setHapticsEnabled: (enabled: boolean) => void;
+  setCelebrationLevel: (level: "full" | "subtle" | "off") => void;
   updateQuickPreset: (index: number, preset: QuickPreset) => void;
   resetQuickPresets: () => void;
   clearAllData: () => void;
@@ -76,8 +77,9 @@ export const useHydrationStore = create<HydrationStore>()(
       weeklyVolume: 0,
       lastWeekReset: getWeekStart(),
       alwaysNotify: false,
-      reminderInterval: 60,
+      reminderInterval: 90,
       hapticsEnabled: true,
+      celebrationLevel: "subtle",
       weeklyHistory: [],
       quickPresets: DEFAULT_QUICK_PRESETS,
 
@@ -91,6 +93,10 @@ export const useHydrationStore = create<HydrationStore>()(
       setHapticsEnabled: (enabled: boolean) => {
         setGlobalHapticsEnabled(enabled);
         set({ hapticsEnabled: enabled });
+      },
+
+      setCelebrationLevel: (level: "full" | "subtle" | "off") => {
+        set({ celebrationLevel: level });
       },
 
       updateQuickPreset: (index: number, preset: QuickPreset) => {
@@ -114,8 +120,9 @@ export const useHydrationStore = create<HydrationStore>()(
         weeklyVolume: 0,
         lastWeekReset: getWeekStart(),
         alwaysNotify: false,
-        reminderInterval: 60,
+        reminderInterval: 90,
         hapticsEnabled: true,
+        celebrationLevel: "subtle",
         weeklyHistory: [],
         quickPresets: DEFAULT_QUICK_PRESETS,
       }),
@@ -208,8 +215,12 @@ export const useHydrationStore = create<HydrationStore>()(
           if (get().lastGoalMetDate !== today) {
             set({ lastGoalMetDate: today });
           }
-          await hapticCelebration();
-          await sendGoalCelebration();
+          const { celebrationLevel } = get();
+          if (celebrationLevel === "full") {
+            await hapticCelebration();
+          } else if (celebrationLevel === "subtle") {
+            await hapticLight();
+          }
         }
 
         // Check achievements

@@ -28,25 +28,25 @@ Hydration coefficients modeled after physiological osmolarity:
 - **Environmental Adaptation**: Automatically increases daily hydration targets during high heat via OpenWeather API integration.
 - **Dynamic Heatwave Boost Badge**: Visual `+% Heat Boost` indicator informing users of weather adjustments.
 
-### ⏱️ Smart Intraday Pacer & Dismissible Celebrations
-- **Contextual Real-Time Pacing**: Dynamic timeline advice pill beneath the bottle (Morning Pace, Afternoon Boost, Evening Flow, Goal Met).
-- **Dismissible Goal Celebration**: Confetti bursts with a dismissible daily milestone card allowing seamless tracking of subsequent bottles.
+### ⏱️ Advisory Intraday Pacer & Celebration Controls
+- **Contextual Real-Time Pacing**: Gentle, advisory suggestions beneath the bottle (Morning Rhythm, Afternoon refresh, Evening wind-down).
+- **Celebration Intensity Control**: User-selectable celebration feedback in Settings (`Subtle` by default, `Full` with confetti bursts, or `Off`).
 
-### 📊 Fluid Diversity Analytics & Streak Health
+### 📊 Fluid Diversity Analytics & Hydration Rhythm
 - **Daily Fluid Diversity Bar**: Stacked color-coded distribution breakdown of daily liquid intake.
 - **Weekly Activity Chart**: 7-day bar chart with daily averages and target baseline lines.
-- **Streak Health Modal**: Interactive flame indicator tracking current streaks, personal best records, and habit motivation.
+- **Hydration Rhythm Modal**: Calm rhythm tracker recognizing consistency without streak-loss punishment.
 
-### 🏅 Core 4 Milestone System & Social Sharing
+### 🏅 Core 4 Milestone System
 - 💧 **First Sip**: First drink logged.
 - 🎯 **Hydrated Human**: Hit daily goal once.
-- 🔥 **3-Day Flow**: Maintain a 3-day hydration streak.
-- 🐫 **Desert Camel**: Complete 3 full bottles in a single day.
-- **1-Tap Social Share**: Generates celebratory milestone cards for social sharing.
+- 🌊 **3-Day Flow**: Maintain a 3-day hydration flow.
+- 🌿 **Consistent Flow**: Reached hydration target consistently across 7 days.
 
 ### ⚙️ Unified Modern Settings UI
 - **Consolidated Hydration Profile**: Interactive `[-]` / `[+]` weight stepper + segmented activity level controls with real-time calculated goal previews.
-- **Preferences & Schedules**: Waking-hours notification frequency (`30m`, `1h`, `2h`, `3h`), temperature unit (`°C` / `°F`), and tactile toggle.
+- **Gentle Reminders & Schedules**: Respectful options (`Every 90m`, `Every 2h`, `Every 3h`, `Off`) with built-in quiet hours (10:00 PM → 8:00 AM).
+- **Celebration & Haptic Controls**: Adjustable celebration intensity (`Subtle`, `Full`, `Off`) and tactile toggle.
 - **Balanced 2×2 Badge Grid**: Symmetrical, uncluttered milestone matrix.
 
 ---

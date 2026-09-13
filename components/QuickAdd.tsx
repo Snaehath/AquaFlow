@@ -14,7 +14,6 @@ import {
   Droplets,
   Zap,
   Sparkles,
-  Edit2,
   X,
   Check,
   Plus,
