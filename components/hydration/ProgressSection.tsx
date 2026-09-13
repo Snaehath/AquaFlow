@@ -17,13 +17,10 @@ interface ProgressSectionProps {
   hintStyle: any;
 }
 
-const getIntradayPacing = (intakeRatio: number): { text: string; bg: string; textCol: string } => {
+const getIntradayPacing = (): { text: string; bg: string; textCol: string } => {
   const currentHour = new Date().getHours();
-  if (intakeRatio >= 1.0) {
-    return { text: "Hydration target reached 💧 Take care today", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-800" };
-  }
   if (currentHour < 12) {
-    return { text: "Morning Rhythm: A few gentle sips to start your day 🌅", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-700" };
+    return { text: "Morning: A few gentle sips 🌅", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-700" };
   } else if (currentHour < 17) {
     return { text: "Afternoon: A small glass whenever you're ready ⚡", bg: "bg-cyan-50 border-cyan-100", textCol: "text-cyan-800" };
   } else if (currentHour < 21) {
@@ -43,7 +40,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
   onReset,
   hintStyle,
 }) => {
-  const pacing = getIntradayPacing(actualIntake / Math.max(effectiveGoal, 1));
+  const pacing = getIntradayPacing();
 
   return (
     <View className="items-center py-2">

@@ -29,7 +29,6 @@ import QuickAdd from "../components/QuickAdd";
 import HydrationHeader from "../components/hydration/HydrationHeader";
 import ProgressSection from "../components/hydration/ProgressSection";
 import WeatherCard from "../components/hydration/WeatherCard";
-import GoalReachedBanner from "../components/hydration/GoalReachedBanner";
 import CustomLogModal from "../components/hydration/CustomLogModal";
 import { useToastStore } from "@/store/toastStore";
 import { Confetti } from "../components/ui/Confetti";
@@ -45,7 +44,6 @@ const Dashboard = () => {
     completedBottles,
     weather,
     effectiveGoal,
-    isGoalReached,
     lastBeverageType,
     logs,
     removeLog,
@@ -59,7 +57,6 @@ const Dashboard = () => {
   // local state & refs
   const [showCustomLog, setShowCustomLog] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [isGoalDismissed, setIsGoalDismissed] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
   const prevCompletedBottles = useRef(completedBottles);
 
@@ -183,10 +180,6 @@ const Dashboard = () => {
           </View>
 
           <View>
-            {isGoalReached && !isGoalDismissed && (
-              <GoalReachedBanner onDismiss={() => setIsGoalDismissed(true)} />
-            )}
-
             <WeatherCard weather={weather} profile={profile} />
 
             <QuickAdd
