@@ -21,13 +21,13 @@ interface ProgressSectionProps {
 const getIntradayPacing = (): { text: string; bg: string; textCol: string } => {
   const currentHour = new Date().getHours();
   if (currentHour < 12) {
-    return { text: "Morning: A few gentle sips 🌅", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-700" };
+    return { text: "Morning · A few gentle sips", bg: "bg-sky-50 border-sky-100", textCol: "text-sky-700" };
   } else if (currentHour < 17) {
-    return { text: "Afternoon: A small glass whenever you're ready ⚡", bg: "bg-cyan-50 border-cyan-100", textCol: "text-cyan-800" };
+    return { text: "Afternoon · A little water whenever you're ready", bg: "bg-cyan-50 border-cyan-100", textCol: "text-cyan-800" };
   } else if (currentHour < 21) {
-    return { text: "Evening: Gentle sips as your day winds down 🌙", bg: "bg-indigo-50 border-indigo-100", textCol: "text-indigo-700" };
+    return { text: "Evening · Gentle sips as your day winds down", bg: "bg-indigo-50 border-indigo-100", textCol: "text-indigo-700" };
   } else {
-    return { text: "Night: Light sips before sleep 💤", bg: "bg-purple-50 border-purple-100", textCol: "text-purple-700" };
+    return { text: "Night · Light sips before sleep", bg: "bg-purple-50 border-purple-100", textCol: "text-purple-700" };
   }
 };
 
@@ -51,14 +51,17 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
       : `${actualIntake} ml`;
 
   const formattedRef = `~${(refValue / 1000).toFixed(1)} L`;
+  
+  // Note: remainder represents volume consumed beyond completed reference bottles (+X ml), NOT volume remaining to drink
   const remainder = actualIntake % refValue;
 
-  const referenceText =
+  const bottleText =
     completedBottles === 0
-      ? `1st reference bottle · ${Math.round(progress * 100)}%`
-      : `${completedBottles} reference ${
+      ? `1st bottle · ${Math.round(progress * 100)}%`
+      : `${completedBottles} ${
           completedBottles === 1 ? "bottle" : "bottles"
         }${remainder > 0 ? ` · +${remainder} ml` : ""}`;
+
 
   return (
     <View className="items-center py-2">
@@ -112,7 +115,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
           <View className="flex-row items-center bg-sky-100/60 px-3 py-1.5 rounded-full">
             <Droplets size={13} color="#0ea5e9" />
             <Text className="text-sky-900 text-[10px] font-bold ml-1.5">
-              {referenceText}
+              {bottleText}
             </Text>
           </View>
           <View className={`px-3 py-1.5 rounded-full border ${pacing.bg}`}>

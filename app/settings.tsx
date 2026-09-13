@@ -141,17 +141,17 @@ const Settings = () => {
             </View>
             <View className="flex-1">
               <Text className="text-sky-950 font-black text-base">
-                Hydration Profile
+                Your details
               </Text>
               <Text className="text-sky-500 text-xs font-medium">
-                Personalized body baseline & daily movement
+                Weight and daily movement
               </Text>
             </View>
           </View>
 
           {/* Weight Stepper & Input */}
           <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
-            Body Weight
+            Weight
           </Text>
           <View className="flex-row items-center bg-sky-50 p-2 rounded-2xl border border-sky-100 mb-5">
             <Pressable
@@ -195,7 +195,7 @@ const Settings = () => {
 
           {/* Activity Level Segmented Selector */}
           <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
-            Daily Energy Level
+            Activity
           </Text>
           <View className="flex-row gap-2 mb-5">
             {[
@@ -247,7 +247,7 @@ const Settings = () => {
               </Text>
             </View>
             <Text className="text-sky-500/80 text-[11px] leading-4 ml-6">
-              This is a general reference, not a limit. Listen to your body and thirst cues.
+              A general reference, not a limit or requirement.
             </Text>
           </View>
         </View>
@@ -260,10 +260,10 @@ const Settings = () => {
             </View>
             <View className="flex-1">
               <Text className="text-sky-950 font-black text-base">
-                Preferences & Reminders
+                Reminders & display
               </Text>
               <Text className="text-sky-500 text-xs font-medium">
-                Schedules and tactile feedback
+                Schedules, units, and vibrations
               </Text>
             </View>
           </View>
@@ -347,10 +347,10 @@ const Settings = () => {
           <View className="flex-row items-center justify-between py-1">
             <View>
               <Text className="text-sky-950 font-bold text-sm">
-                Tactile Haptics
+                Vibrations
               </Text>
               <Text className="text-sky-400 text-xs">
-                Log feedback & subtle bottle fills
+                Feel taps when logging or filling a bottle
               </Text>
             </View>
             <Pressable

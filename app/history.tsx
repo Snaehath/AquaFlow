@@ -114,7 +114,7 @@ const History = () => {
           <View className="flex-row items-center mb-6">
             <View className="flex-1">
               <Text className="text-sky-100 text-[10px] font-black uppercase tracking-widest mb-1">
-                Daily Volume
+                Today
               </Text>
               <View className="flex-row items-baseline">
                 <Text className="text-white text-4xl font-black">
@@ -135,7 +135,7 @@ const History = () => {
           <View className="flex-row justify-between items-center">
             <View>
               <Text className="text-sky-100 text-[10px] font-black uppercase tracking-widest mb-1">
-                Weekly Total
+                This Week
               </Text>
               <View className="flex-row items-baseline">
                 <Text className="text-white text-2xl font-black">
@@ -158,7 +158,7 @@ const History = () => {
         <View className="bg-white p-5 rounded-4xl border border-sky-100 shadow-sm">
           <View className="flex-row justify-between items-center mb-4 px-1">
             <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest">
-              Weekly Intake
+              This Week
             </Text>
             <Text className="text-sky-500 text-[10px] font-black">
               Avg: {Math.round(weeklyVolume / 7)} ml/day
@@ -208,7 +208,7 @@ const History = () => {
         <View className="px-6 mb-6">
           <View className="bg-white p-5 rounded-4xl border border-sky-100 shadow-sm">
             <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest mb-3 px-1">
-              {"Today's Fluid Diversity"}
+              {"Drinks today"}
             </Text>
 
             {/* Distribution Stacked Bar */}

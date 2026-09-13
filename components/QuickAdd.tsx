@@ -90,7 +90,7 @@ const QuickAdd = ({ onAdd, onOpenCustom }: Props) => {
         </Text>
         <View className="flex-row items-center gap-2.5">
           <Text className="text-sky-400/80 text-[10px] font-semibold">
-            Hold to edit ⚙️
+            Hold to edit
           </Text>
           {onOpenCustom && (
             <Pressable

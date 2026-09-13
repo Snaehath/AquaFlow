@@ -30,7 +30,7 @@ import ProgressSection from "../components/hydration/ProgressSection";
 import WeatherCard from "../components/hydration/WeatherCard";
 import CustomLogModal from "../components/hydration/CustomLogModal";
 import { useToastStore } from "@/store/toastStore";
-import { WaterDropletBurst } from "../components/ui/Confetti";
+import { Confetti } from "../components/ui/Confetti";
 
 const Dashboard = () => {
   // hydration hook
@@ -51,7 +51,7 @@ const Dashboard = () => {
 
   // local state & refs
   const [showCustomLog, setShowCustomLog] = useState(false);
-  const [showDroplets, setShowDroplets] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
   const prevCompletedBottles = useRef(completedBottles);
 
@@ -64,18 +64,18 @@ const Dashboard = () => {
     }
   }, [isLoading]);
 
-  // Subtle water droplet delight when a reference bottle volume is completed
+  // Confetti celebration when a bottle volume is completed
   useEffect(() => {
     if (completedBottles > prevCompletedBottles.current) {
       hapticLight();
-      setShowDroplets(true);
+      setShowConfetti(true);
       showToast({
         title: "Bottle filled 💧",
         description: "Recorded toward today's hydration.",
         variant: "success",
         duration: 2500,
       });
-      const timer = setTimeout(() => setShowDroplets(false), 1000);
+      const timer = setTimeout(() => setShowConfetti(false), 3500);
       prevCompletedBottles.current = completedBottles;
       return () => clearTimeout(timer);
     }
@@ -185,7 +185,7 @@ const Dashboard = () => {
         onConfirm={(amount, type) => handleAdd(amount, type)}
       />
 
-      {showDroplets && <WaterDropletBurst />}
+      {showConfetti && <Confetti />}
     </SafeAreaView>
   );
 };

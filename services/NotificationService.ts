@@ -98,7 +98,7 @@ export const rescheduleAllReminders = async (intervalMinutes: number) => {
         Notifications.scheduleNotificationAsync({
           identifier: `aquaflow-daily-reminder-${hour}-${minute}`,
           content: {
-            title: "AquaFlow 💧",
+            title: "Time for a drink?",
             body: message,
             sound: "default",
             categoryIdentifier: WATER_REMINDER_CATEGORY,
@@ -128,41 +128,18 @@ export const rescheduleAllReminders = async (intervalMinutes: number) => {
   }
 };
 
-export const sendGoalCelebration = async () => {
-  if (Platform.OS === "web") return;
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Wow! Bottle Completed! 🏆",
-      body: "You've reached your milestone. Keep that flow going!",
-      sound: true,
-    },
-    trigger: null,
-  });
-};
-
-export const sendAchievementUnlocked = async (title: string, body: string) => {
-  if (Platform.OS === "web") return;
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: `Achievement Unlocked! 🏅`,
-      body: `You earned the "${title}" badge: ${body}`,
-      sound: true,
-    },
-    trigger: null,
-  });
-};
-
 export const sendQuickLogConfirmation = async (amount: number) => {
   if (Platform.OS === "web") return;
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: "Water Logged! 💧",
-      body: `Successfully added ${amount}ml of water.`,
+      title: "Water logged",
+      body: `Added ${amount}ml.`,
       sound: "default",
     },
     trigger: null,
   });
 };
+
 
 
 

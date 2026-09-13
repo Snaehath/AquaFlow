@@ -13,14 +13,11 @@ export const WAKING_START_HOUR = 8; // 8:00 AM
 export const WAKING_END_HOUR = 22; // 10:00 PM
 
 export const REMINDER_MESSAGES: string[] = [
-  "A small sip might feel good right now. 💧",
-  "Take your time and stay refreshed. 🌊",
-  "A gentle pause for a glass of water. ✨",
-  "A little refresh whenever you're ready. 🌿",
-  "Water break whenever you'd like. 💎",
-  "A quiet moment to hydrate. 🧊",
-  "Enjoying your day? Here's a gentle reminder to sip. 💧",
-  "Keep your natural flow going. 🌟",
+  "Have some water when you're ready.",
+  "A small sip whenever you'd like.",
+  "Take your time and stay refreshed.",
+  "A quiet moment for a drink.",
+  "A gentle pause to hydrate.",
 ];
 
 export const BEVERAGE_TYPES: BeverageType[] = [
