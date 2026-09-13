@@ -2,7 +2,9 @@ import { useRouter } from "expo-router";
 import {
   Activity,
   Award,
+  ChevronDown,
   ChevronLeft,
+  ChevronUp,
   Lock,
   Minus,
   Plus,
@@ -44,6 +46,7 @@ const Settings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedAch, setSelectedAch] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isScienceExpanded, setIsScienceExpanded] = useState(false);
 
   const unlockedAchievements = useHydrationStore((s) => s.unlockedAchievements);
   const storeReminderInterval = useHydrationStore((s) => s.reminderInterval);
@@ -418,81 +421,76 @@ const Settings = () => {
           </View>
         </View>
 
-        {/* 3. HYDRATION SCIENCE GUIDE */}
+        {/* 3. SYSTEM & DATA MANAGEMENT */}
         <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
           <View className="flex-row items-center mb-4">
             <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
-              <Activity size={20} color="#0284c7" />
+              <Smartphone size={20} color="#0284c7" />
             </View>
             <View className="flex-1">
               <Text className="text-sky-950 font-black text-base">
-                Hydration Science
+                Data & Privacy
               </Text>
               <Text className="text-sky-500 text-xs font-medium">
-                Beverage coefficient multipliers
+                100% offline & stored locally
               </Text>
             </View>
           </View>
 
-          <View className="gap-2">
-            {[
-              {
-                name: "Water",
-                coeff: "100%",
-                desc: "Pure baseline hydration with zero loss",
-                color: "text-sky-600",
-                bg: "bg-sky-50",
-              },
-              {
-                name: "Electrolytes",
-                coeff: "115%",
-                desc: "Enhanced mineral osmolarity & retention",
-                color: "text-cyan-600",
-                bg: "bg-cyan-50",
-              },
-              {
-                name: "Fruit Juice",
-                coeff: "95%",
-                desc: "High water volume with natural carbohydrates",
-                color: "text-orange-600",
-                bg: "bg-orange-50",
-              },
-              {
-                name: "Herbal / Tea",
-                coeff: "92%",
-                desc: "Gentle hydration with natural antioxidants",
-                color: "text-emerald-600",
-                bg: "bg-emerald-50",
-              },
-              {
-                name: "Coffee",
-                coeff: "90%",
-                desc: "Hydrating with mild caffeine diuretic offset",
-                color: "text-amber-600",
-                bg: "bg-amber-50",
-              },
-            ].map((item) => (
-              <View
-                key={item.name}
-                className={`p-3 rounded-2xl ${item.bg} flex-row items-center justify-between`}
-              >
-                <View className="flex-1 pr-2">
-                  <Text className="text-sky-950 font-bold text-xs">
-                    {item.name}
-                  </Text>
-                  <Text className="text-sky-500/80 text-[10px]">
-                    {item.desc}
-                  </Text>
-                </View>
-                <Text className={`font-black text-xs ${item.color}`}>
-                  {item.coeff}
-                </Text>
-              </View>
-            ))}
-          </View>
+          {/* Wipe Data Button */}
+          <Pressable
+            onPress={() => {
+              Alert.alert(
+                "Delete All Local Data?",
+                "This will permanently erase all your hydration logs, daily streak history, settings, and achievements.",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Delete Everything",
+                    style: "destructive",
+                    onPress: () => {
+                      clearAllData();
+                      Alert.alert(
+                        "Data Wiped",
+                        "All local data has been successfully cleared.",
+                        [{ text: "OK", onPress: () => router.replace("/") }],
+                      );
+                    },
+                  },
+                ],
+              );
+            }}
+            className="flex-row items-center justify-between py-3.5 active:opacity-60"
+          >
+            <View className="flex-row items-center">
+              <Trash2 size={16} color="#ef4444" />
+              <Text className="text-red-500 font-bold text-sm ml-2.5">
+                Erase All Data
+              </Text>
+            </View>
+            <Text className="text-red-400 text-xs font-bold">Reset</Text>
+          </Pressable>
         </View>
 
-        {/* 4. MILESTONES & ACHIEVEMENTS (2x2 Grid for 4 Badges) */}
+        {/* Save Button */}
+        <Pressable
+          onPress={handleSave}
+          disabled={isSaving}
+          className="bg-sky-500 active:bg-sky-600 p-4 rounded-2xl flex-row items-center justify-center shadow-md mb-6"
+        >
+          {isSaving ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <>
+              <Save color="white" size={18} />
+              <Text className="text-white font-black text-base ml-2">
+                Save Changes
+              </Text>
+            </>
+          )}
+        </Pressable>
+
+        {/* 4. MILESTONES & ACHIEVEMENTS (Reference) */}
         <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
           <View className="flex-row items-center mb-5">
             <View className="bg-orange-100 p-3 rounded-2xl mr-3.5">
@@ -601,72 +599,92 @@ const Settings = () => {
           </View>
         </View>
 
-        {/* 5. SYSTEM & DATA MANAGEMENT */}
-        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-8">
-          <View className="flex-row items-center mb-4">
-            <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
-              <Smartphone size={20} color="#0284c7" />
+        {/* 5. HYDRATION SCIENCE GUIDE (Collapsible Reference) */}
+        <Pressable
+          onPress={() => {
+            hapticLight();
+            setIsScienceExpanded(!isScienceExpanded);
+          }}
+          className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-8"
+        >
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center flex-1 pr-2">
+              <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
+                <Activity size={20} color="#0284c7" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sky-950 font-black text-base">
+                  Hydration Science
+                </Text>
+                <Text className="text-sky-500 text-xs font-medium">
+                  Learn how beverage contributions are calculated
+                </Text>
+              </View>
             </View>
-            <View className="flex-1">
-              <Text className="text-sky-950 font-black text-base">
-                Data & Privacy
-              </Text>
-              <Text className="text-sky-500 text-xs font-medium">
-                100% offline & stored locally
-              </Text>
-            </View>
+            {isScienceExpanded ? (
+              <ChevronUp size={20} color="#0284c7" />
+            ) : (
+              <ChevronDown size={20} color="#94a3b8" />
+            )}
           </View>
 
-          {/* Wipe Data Button */}
-          <Pressable
-            onPress={() => {
-              Alert.alert(
-                "Delete All Local Data?",
-                "This will permanently erase all your hydration logs, daily streak history, settings, and achievements.",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Delete Everything",
-                    style: "destructive",
-                    onPress: () => {
-                      clearAllData();
-                      Alert.alert(
-                        "Data Wiped",
-                        "All local data has been successfully cleared.",
-                        [{ text: "OK", onPress: () => router.replace("/") }],
-                      );
-                    },
-                  },
-                ],
-              );
-            }}
-            className="flex-row items-center justify-between py-3.5 active:opacity-60"
-          >
-            <View className="flex-row items-center">
-              <Trash2 size={16} color="#ef4444" />
-              <Text className="text-red-500 font-bold text-sm ml-2.5">
-                Erase All Data
-              </Text>
+          {isScienceExpanded && (
+            <View className="gap-2 mt-4 pt-4 border-t border-sky-50">
+              {[
+                {
+                  name: "Water",
+                  coeff: "100%",
+                  desc: "Pure baseline hydration with zero loss",
+                  color: "text-sky-600",
+                  bg: "bg-sky-50",
+                },
+                {
+                  name: "Electrolytes",
+                  coeff: "115%",
+                  desc: "Enhanced mineral osmolarity & retention",
+                  color: "text-cyan-600",
+                  bg: "bg-cyan-50",
+                },
+                {
+                  name: "Fruit Juice",
+                  coeff: "95%",
+                  desc: "High water volume with natural carbohydrates",
+                  color: "text-orange-600",
+                  bg: "bg-orange-50",
+                },
+                {
+                  name: "Herbal / Tea",
+                  coeff: "92%",
+                  desc: "Gentle hydration with natural antioxidants",
+                  color: "text-emerald-600",
+                  bg: "bg-emerald-50",
+                },
+                {
+                  name: "Coffee",
+                  coeff: "90%",
+                  desc: "Hydrating with mild caffeine diuretic offset",
+                  color: "text-amber-600",
+                  bg: "bg-amber-50",
+                },
+              ].map((item) => (
+                <View
+                  key={item.name}
+                  className={`p-3 rounded-2xl ${item.bg} flex-row items-center justify-between`}
+                >
+                  <View className="flex-1 pr-2">
+                    <Text className="text-sky-950 font-bold text-xs">
+                      {item.name}
+                    </Text>
+                    <Text className="text-sky-500/80 text-[10px]">
+                      {item.desc}
+                    </Text>
+                  </View>
+                  <Text className={`font-black text-xs ${item.color}`}>
+                    {item.coeff}
+                  </Text>
+                </View>
+              ))}
             </View>
-            <Text className="text-red-400 text-xs font-bold">Reset</Text>
-          </Pressable>
-        </View>
-
-        {/* Save Button */}
-        <Pressable
-          onPress={handleSave}
-          disabled={isSaving}
-          className="bg-sky-500 active:bg-sky-600 p-4 rounded-2xl flex-row items-center justify-center shadow-md mb-8"
-        >
-          {isSaving ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <>
-              <Save color="white" size={18} />
-              <Text className="text-white font-black text-base ml-2">
-                Save Changes
-              </Text>
-            </>
           )}
         </Pressable>
       </ScrollView>
@@ -723,16 +741,15 @@ const Settings = () => {
 
                     <View className="mt-6 w-full gap-2">
                       <View
-                        className={`flex-row items-center justify-center p-3 rounded-2xl border ${
-                          isUnlocked
-                            ? "bg-teal-50 border-teal-200"
-                            : "bg-slate-50 border-slate-200"
-                        }`}
+                        style={{
+                          backgroundColor: isUnlocked ? "#f0fdfa" : "#f8fafc",
+                          borderColor: isUnlocked ? "#99f6e4" : "#e2e8f0",
+                        }}
+                        className="flex-row items-center justify-center p-3 rounded-2xl border"
                       >
                         <Text
-                          className={`font-bold text-xs ${
-                            isUnlocked ? "text-teal-700" : "text-slate-500"
-                          }`}
+                          style={{ color: isUnlocked ? "#0f766e" : "#64748b" }}
+                          className="font-bold text-xs"
                         >
                           {isUnlocked ? "Unlocked 🏅" : "Locked 🔒"}
                         </Text>

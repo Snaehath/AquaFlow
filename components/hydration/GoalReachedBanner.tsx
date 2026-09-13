@@ -1,6 +1,6 @@
-import React from "react";
-import { View, Text, Pressable } from "react-native";
 import { CheckCircle2, X } from "lucide-react-native";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 interface GoalReachedBannerProps {
@@ -22,7 +22,7 @@ const GoalReachedBanner: React.FC<GoalReachedBannerProps> = ({ onDismiss }) => {
           Well Hydrated Today 💧
         </Text>
         <Text className="text-sky-600 text-xs font-medium">
-          {"You've reached your daily target. Have a wonderful day."}
+          {"You've reached your daily target."}
         </Text>
       </View>
       {onDismiss ? (
@@ -40,5 +40,3 @@ const GoalReachedBanner: React.FC<GoalReachedBannerProps> = ({ onDismiss }) => {
 };
 
 export default React.memo(GoalReachedBanner);
-
-

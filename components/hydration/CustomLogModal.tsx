@@ -47,7 +47,6 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
   const isValid =
     isNaN(parsedAmount) || (parsedAmount > 0 && parsedAmount <= 3000);
 
-  const multiplier = BEVERAGES[selectedType].multiplier;
   const effectiveVolume = calculateEffectiveAmount(
     effectiveBaseAmount,
     selectedType,
@@ -122,11 +121,11 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
                     hapticLight();
                     setSelectedType(type);
                   }}
-                  className={`flex-1 py-2.5 rounded-2xl items-center border ${
-                    isSelected
-                      ? "bg-sky-500 border-sky-500 shadow-sm"
-                      : "bg-sky-50 border-sky-100"
-                  }`}
+                  style={{
+                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                  }}
+                  className="flex-1 py-2.5 rounded-2xl items-center border shadow-xs"
                 >
                   <Icon
                     size={20}
@@ -134,16 +133,14 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
                     strokeWidth={2.4}
                   />
                   <Text
-                    className={`text-[10px] font-black mt-1 ${
-                      isSelected ? "text-white" : "text-sky-900"
-                    }`}
+                    style={{ color: isSelected ? "#ffffff" : "#075985" }}
+                    className="text-[10px] font-black mt-1"
                   >
                     {config.label}
                   </Text>
                   <Text
-                    className={`text-[8px] font-bold ${
-                      isSelected ? "text-sky-100" : "text-sky-400"
-                    }`}
+                    style={{ color: isSelected ? "#e0f2fe" : "#38bdf8" }}
+                    className="text-[8px] font-bold"
                   >
                     {Math.round(config.multiplier * 100)}%
                   </Text>
@@ -157,28 +154,30 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
             Quick Volumes
           </Text>
           <View className="flex-row gap-2 mb-4">
-            {PRESETS.map((preset) => (
-              <Pressable
-                key={preset}
-                onPress={() => {
-                  hapticLight();
-                  setRaw(preset.toString());
-                }}
-                className={`flex-1 py-2.5 rounded-xl items-center border ${
-                  raw === preset.toString()
-                    ? "bg-sky-500 border-sky-500"
-                    : "bg-sky-50 border-sky-100"
-                }`}
-              >
-                <Text
-                  className={`text-xs font-black ${
-                    raw === preset.toString() ? "text-white" : "text-sky-800"
-                  }`}
+            {PRESETS.map((preset) => {
+              const isSelected = raw === preset.toString();
+              return (
+                <Pressable
+                  key={preset}
+                  onPress={() => {
+                    hapticLight();
+                    setRaw(preset.toString());
+                  }}
+                  style={{
+                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                  }}
+                  className="flex-1 py-2.5 rounded-xl items-center border"
                 >
-                  +{preset}ml
-                </Text>
-              </Pressable>
-            ))}
+                  <Text
+                    style={{ color: isSelected ? "#ffffff" : "#075985" }}
+                    className="text-xs font-black"
+                  >
+                    +{preset}ml
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
 
           {/* Input Box */}
@@ -195,15 +194,15 @@ const CustomLogModal: React.FC<CustomLogModalProps> = ({
             <Text className="text-sky-400 font-black text-lg ml-2">ml</Text>
           </View>
 
-          {/* Hydration Efficiency Pill */}
+          {/* Hydration Contribution Pill */}
           <View className="flex-row items-center bg-sky-50/60 px-3.5 py-2 rounded-xl border border-sky-100/60 mb-5">
             <Info size={14} color="#0284c7" />
             <Text className="text-sky-700 text-xs font-medium ml-2 flex-1">
-              Hydration Value:{" "}
+              {"Counts as "}
               <Text className="font-bold text-sky-950">
-                {effectiveVolume}ml
-              </Text>{" "}
-              ({Math.round(multiplier * 100)}% coefficient)
+                {effectiveVolume} ml
+              </Text>
+              {" toward today's hydration"}
             </Text>
           </View>
 

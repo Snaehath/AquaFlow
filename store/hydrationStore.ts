@@ -23,7 +23,7 @@ export const DEFAULT_QUICK_PRESETS: QuickPreset[] = [
   { id: "preset_1", label: "Glass", amount: 250, type: "water" },
   { id: "preset_2", label: "Coffee", amount: 350, type: "coffee" },
   { id: "preset_3", label: "Bottle", amount: 500, type: "water" },
-  { id: "preset_4", label: "Power", amount: 500, type: "electrolyte" },
+  { id: "preset_4", label: "Electrolytes", amount: 500, type: "electrolyte" },
 ];
 
 // store interface

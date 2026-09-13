@@ -224,11 +224,11 @@ const QuickAdd = ({ onAdd, onOpenCustom }: Props) => {
                       hapticLight();
                       setEditType(bev);
                     }}
-                    className={`flex-1 py-2.5 rounded-2xl items-center border ${
-                      isSelected
-                        ? "bg-sky-500 border-sky-500 shadow-sm"
-                        : "bg-sky-50 border-sky-100"
-                    }`}
+                    style={{
+                      backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                      borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                    }}
+                    className="flex-1 py-2.5 rounded-2xl items-center border shadow-xs"
                   >
                     <Icon
                       size={18}
@@ -236,16 +236,14 @@ const QuickAdd = ({ onAdd, onOpenCustom }: Props) => {
                       strokeWidth={2.4}
                     />
                     <Text
-                      className={`text-[10px] font-black mt-1 ${
-                        isSelected ? "text-white" : "text-sky-800"
-                      }`}
+                      style={{ color: isSelected ? "#ffffff" : "#075985" }}
+                      className="text-[10px] font-black mt-1"
                     >
                       {config.label}
                     </Text>
                     <Text
-                      className={`text-[8px] font-bold ${
-                        isSelected ? "text-sky-100" : "text-sky-400"
-                      }`}
+                      style={{ color: isSelected ? "#e0f2fe" : "#38bdf8" }}
+                      className="text-[8px] font-bold"
                     >
                       {Math.round(config.multiplier * 100)}%
                     </Text>
@@ -259,28 +257,30 @@ const QuickAdd = ({ onAdd, onOpenCustom }: Props) => {
               Container Size (ml)
             </Text>
             <View className="flex-row flex-wrap gap-2 mb-6">
-              {PRESET_AMOUNTS.map((amt) => (
-                <Pressable
-                  key={amt}
-                  onPress={() => {
-                    hapticLight();
-                    setEditAmount(amt);
-                  }}
-                  className={`flex-1 min-w-[28%] py-3 rounded-2xl items-center border ${
-                    editAmount === amt
-                      ? "bg-sky-500 border-sky-500"
-                      : "bg-sky-50 border-sky-100"
-                  }`}
-                >
-                  <Text
-                    className={`text-sm font-black ${
-                      editAmount === amt ? "text-white" : "text-sky-800"
-                    }`}
+              {PRESET_AMOUNTS.map((amt) => {
+                const isSelected = editAmount === amt;
+                return (
+                  <Pressable
+                    key={amt}
+                    onPress={() => {
+                      hapticLight();
+                      setEditAmount(amt);
+                    }}
+                    style={{
+                      backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                      borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                    }}
+                    className="flex-1 min-w-[28%] py-3 rounded-2xl items-center border"
                   >
-                    {amt} ml
-                  </Text>
-                </Pressable>
-              ))}
+                    <Text
+                      style={{ color: isSelected ? "#ffffff" : "#075985" }}
+                      className="text-sm font-black"
+                    >
+                      {amt} ml
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
 
             {/* Save Button */}
