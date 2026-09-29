@@ -1,6 +1,6 @@
 import { formatDate } from "@/utils/date";
 import { useRouter } from "expo-router";
-import { History, Settings } from "lucide-react-native";
+import { Calendar, Settings } from "lucide-react-native";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -24,7 +24,7 @@ const HydrationHeader: React.FC<HydrationHeaderProps> = () => {
           onPress={() => router.push("/history")}
           className="p-2.5 bg-white rounded-2xl border border-sky-100 shadow-xs active:bg-sky-50"
         >
-          <History size={18} color="#0ea5e9" />
+          <Calendar size={18} color="#0ea5e9" />
         </Pressable>
         <Pressable
           onPress={() => router.push("/settings")}

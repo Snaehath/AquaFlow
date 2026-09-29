@@ -12,12 +12,18 @@ export const DEFAULT_PROFILE: UserProfile = {
 export const WAKING_START_HOUR = 8; // 8:00 AM
 export const WAKING_END_HOUR = 22; // 10:00 PM
 
-export const REMINDER_MESSAGES: string[] = [
-  "Have some water when you're ready.",
-  "A small sip whenever you'd like.",
-  "Take your time and stay refreshed.",
-  "A quiet moment for a drink.",
-  "A gentle pause to hydrate.",
+export interface ReminderMessage {
+  title: string;
+  body: string;
+}
+
+export const REMINDER_MESSAGES: ReminderMessage[] = [
+  { title: "💧 A little hydration break", body: "Have some water when you're ready." },
+  { title: "💧 How about a sip?", body: "Your bottle might be waiting." },
+  { title: "💧 Take a moment", body: "A little water sounds nice." },
+  { title: "💧 Gentle pause", body: "Take your time and stay refreshed." },
+  { title: "💧 Just a reminder", body: "Have a drink when you feel like it." },
+  { title: "💧 Quiet refresh", body: "A small sip whenever you'd like." },
 ];
 
 export const BEVERAGE_TYPES: BeverageType[] = [

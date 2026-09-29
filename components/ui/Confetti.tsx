@@ -6,129 +6,125 @@ import Animated, {
   withTiming,
   withDelay,
   Easing,
-  withRepeat,
 } from "react-native-reanimated";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-// Lightweight count for a delicate, uncluttered celebration
-const CONFETTI_COUNT = 32;
-
-// Soft, harmonious pastel and jewel tones
-const COLORS = [
-  "#38bdf8", // sky
-  "#0ea5e9", // ocean
-  "#22d3ee", // cyan
-  "#34d399", // soft mint
-  "#fbbf24", // warm gold
-  "#f472b6", // soft rose
-  "#818cf8", // soft lavender
-];
-
-interface ConfettiPieceProps {
-  index: number;
-}
-
-const ConfettiPiece: React.FC<ConfettiPieceProps> = ({ index }) => {
-  const startX = Math.random() * SCREEN_WIDTH;
-  const size = Math.random() * 4 + 5; // 5px to 9px
-  const color = COLORS[index % COLORS.length];
-  const isRound = Math.random() > 0.4;
-  const drift = (Math.random() - 0.5) * 60; // gentle horizontal drift
-
-  const yVal = useSharedValue(-20);
-  const xVal = useSharedValue(startX);
-  const rotation = useSharedValue(0);
-  const opacity = useSharedValue(0.95);
+// Concentric ripple ring
+const RippleRing: React.FC<{ delay: number; size: number }> = ({ delay, size }) => {
+  const scale = useSharedValue(0.4);
+  const opacity = useSharedValue(0.5);
 
   useEffect(() => {
-    const duration = Math.random() * 800 + 2200; // 2.2s to 3.0s
-    const delay = Math.random() * 400;
-
-    // Smooth descent across screen
-    yVal.value = withDelay(
+    scale.value = withDelay(
       delay,
-      withTiming(SCREEN_HEIGHT + 30, {
-        duration,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      withTiming(2.2, {
+        duration: 1600,
+        easing: Easing.out(Easing.cubic),
       })
     );
-
-    // Subtle horizontal drift
-    xVal.value = withDelay(
-      delay,
-      withTiming(startX + drift, {
-        duration,
-        easing: Easing.inOut(Easing.quad),
-      })
-    );
-
-    // Soft fade near the bottom
     opacity.value = withDelay(
-      delay + duration * 0.65,
-      withTiming(0, { duration: duration * 0.35 })
-    );
-
-    // Gentle tumbling rotation
-    rotation.value = withDelay(
       delay,
-      withRepeat(
-        withTiming(360, {
-          duration: Math.random() * 800 + 1200,
-          easing: Easing.linear,
-        }),
-        -1,
-        false
-      )
+      withTiming(0, {
+        duration: 1600,
+        easing: Easing.out(Easing.quad),
+      })
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [delay, scale, opacity]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: yVal.value },
-      { translateX: xVal.value },
-      { rotate: `${rotation.value}deg` },
-    ],
+  const style = useAnimatedStyle(() => ({
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    borderWidth: 2,
+    borderColor: "#38bdf8",
+    transform: [{ scale: scale.value }],
     opacity: opacity.value,
+    position: "absolute",
+  }));
+
+  return <Animated.View style={style} />;
+};
+
+// Subtle refraction droplet
+const RefractionParticle: React.FC<{ angle: number; distance: number; delay: number }> = ({
+  angle,
+  distance,
+  delay,
+}) => {
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withDelay(
+      delay,
+      withTiming(1, {
+        duration: 1200,
+        easing: Easing.out(Easing.quad),
+      })
+    );
+  }, [delay, progress]);
+
+  const targetX = Math.cos(angle) * distance;
+  const targetY = Math.sin(angle) * distance;
+
+  const style = useAnimatedStyle(() => {
+    const p = progress.value;
+    return {
+      position: "absolute",
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: "#0ea5e9",
+      transform: [
+        { translateX: targetX * p },
+        { translateY: targetY * p },
+        { scale: (1 - p * 0.4) },
+      ],
+      opacity: (1 - p) * 0.7,
+    };
+  });
+
+  return <Animated.View style={style} />;
+};
+
+export const LiquidRefraction: React.FC = () => {
+  const particles = Array.from({ length: 12 }).map((_, i) => ({
+    angle: (i / 12) * Math.PI * 2,
+    distance: 70 + (i % 3) * 25,
+    delay: (i % 4) * 60,
   }));
 
   return (
-    <Animated.View
-      style={[
-        styles.piece,
-        animatedStyle,
-        {
-          width: size,
-          height: isRound ? size : size * 1.3,
-          backgroundColor: color,
-          borderRadius: isRound ? size / 2 : 2,
-        },
-      ]}
-    />
+    <View style={styles.container} pointerEvents="none">
+      {/* Concentric gentle water ripples */}
+      <RippleRing delay={0} size={140} />
+      <RippleRing delay={200} size={140} />
+      <RippleRing delay={400} size={140} />
+
+      {/* Gentle water refraction sparks */}
+      {particles.map((p, idx) => (
+        <RefractionParticle
+          key={idx}
+          angle={p.angle}
+          distance={p.distance}
+          delay={p.delay}
+        />
+      ))}
+    </View>
   );
 };
 
-export const Confetti: React.FC = () => (
-  <View style={StyleSheet.absoluteFill} pointerEvents="none">
-    {Array.from({ length: CONFETTI_COUNT }).map((_, index) => (
-      <ConfettiPiece key={index} index={index} />
-    ))}
-  </View>
-);
-
-export const WaterDropletBurst = Confetti;
+// Backward compatible export
+export const Confetti = LiquidRefraction;
+export const WaterDropletBurst = LiquidRefraction;
 
 const styles = StyleSheet.create({
-  piece: {
-    position: "absolute",
-    top: 0,
-    left: 0,
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
     zIndex: 9999,
   },
 });
 
-export default React.memo(Confetti);
-
-
-
+export default React.memo(LiquidRefraction);

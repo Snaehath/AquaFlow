@@ -75,7 +75,7 @@ const Dashboard = () => {
         variant: "success",
         duration: 2500,
       });
-      const timer = setTimeout(() => setShowConfetti(false), 3500);
+      const timer = setTimeout(() => setShowConfetti(false), 2000);
       prevCompletedBottles.current = completedBottles;
       return () => clearTimeout(timer);
     }
@@ -166,11 +166,11 @@ const Dashboard = () => {
               onReset={handleReset}
               hintStyle={hintStyle}
             />
+
+            <WeatherCard weather={weather} profile={profile} />
           </View>
 
           <View>
-            <WeatherCard weather={weather} profile={profile} />
-
             <QuickAdd
               onAdd={handleAdd}
               onOpenCustom={() => setShowCustomLog(true)}

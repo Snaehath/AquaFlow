@@ -6,58 +6,24 @@ import {
   REMINDER_MESSAGES,
 } from "../constants";
 
-export const WATER_REMINDER_CATEGORY = "water-reminder";
 
-export const ACTION_LOG_250 = "LOG_WATER_250";
-export const ACTION_LOG_500 = "LOG_WATER_500";
-export const ACTION_LOG_CUSTOM = "LOG_WATER_CUSTOM";
-
-export const setupNotificationCategories = async () => {
+export const setupNotificationChannel = async () => {
   if (Platform.OS === "web") return;
 
   try {
     if (Platform.OS === "android") {
       await Notifications.setNotificationChannelAsync("default", {
         name: "Hydration Reminders",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
+        importance: Notifications.AndroidImportance.DEFAULT,
+        vibrationPattern: [0, 150, 150, 150],
         lightColor: "#0ea5e9",
         sound: "default",
       });
     }
-
-    await Notifications.setNotificationCategoryAsync(WATER_REMINDER_CATEGORY, [
-      {
-        identifier: ACTION_LOG_250,
-        buttonTitle: "+250ml 💧",
-        options: {
-          opensAppToForeground: true,
-        },
-      },
-      {
-        identifier: ACTION_LOG_500,
-        buttonTitle: "+500ml 💧",
-        options: {
-          opensAppToForeground: true,
-        },
-      },
-      {
-        identifier: ACTION_LOG_CUSTOM,
-        buttonTitle: "Custom ml",
-        textInput: {
-          submitButtonTitle: "Log",
-          placeholder: "Enter ml (e.g. 350)",
-        },
-        options: {
-          opensAppToForeground: true,
-        },
-      },
-    ]);
   } catch (error) {
-    console.error("Failed to setup notification categories:", error);
+    console.error("Failed to setup notification channel:", error);
   }
 };
-
 
 let isRescheduling = false;
 let pendingInterval: number | null = null;
@@ -85,23 +51,23 @@ export const rescheduleAllReminders = async (intervalMinutes: number) => {
     let currentOffsetMinutes = 0;
     const totalMinutes = (WAKING_END_HOUR - WAKING_START_HOUR) * 60;
     const promises: Promise<string>[] = [];
+    let messageIndex = 0;
 
     while (currentOffsetMinutes <= totalMinutes) {
       const totalMinutesFromStart = WAKING_START_HOUR * 60 + currentOffsetMinutes;
       const hour = Math.floor(totalMinutesFromStart / 60);
       const minute = totalMinutesFromStart % 60;
 
-      const message =
-        REMINDER_MESSAGES[Math.floor(Math.random() * REMINDER_MESSAGES.length)];
+      const reminder = REMINDER_MESSAGES[messageIndex % REMINDER_MESSAGES.length];
+      messageIndex++;
 
       promises.push(
         Notifications.scheduleNotificationAsync({
           identifier: `aquaflow-daily-reminder-${hour}-${minute}`,
           content: {
-            title: "Time for a drink?",
-            body: message,
+            title: reminder.title,
+            body: reminder.body,
             sound: "default",
-            categoryIdentifier: WATER_REMINDER_CATEGORY,
           },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.DAILY,

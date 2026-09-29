@@ -7,12 +7,8 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { Toast } from "../components/ui/Toast";
 import {
-  setupNotificationCategories,
+  setupNotificationChannel,
   rescheduleAllReminders,
-  ACTION_LOG_250,
-  ACTION_LOG_500,
-  ACTION_LOG_CUSTOM,
-  sendQuickLogConfirmation,
 } from "@/services/NotificationService";
 import { useHydrationStore } from "@/store/hydrationStore";
 
@@ -38,8 +34,8 @@ export default function RootLayout() {
         await Notifications.requestPermissionsAsync();
       }
 
-      // 2. Setup Notification Actions Categories
-      await setupNotificationCategories();
+      // 2. Setup Notification Channel
+      await setupNotificationChannel();
 
       // 3. Reschedule Reminders once on app start
       const reminderInterval = useHydrationStore.getState().reminderInterval;
@@ -54,52 +50,6 @@ export default function RootLayout() {
     };
 
     initNotificationsAndPermissions();
-
-    // Listen to notification action responses (e.g. quick logging without opening app)
-    const responseSubscription =
-      Notifications.addNotificationResponseReceivedListener(async (response) => {
-        const actionId = response.actionIdentifier;
-
-        if (actionId === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-          return;
-        }
-
-        // Dismiss the reminder notification immediately so user cannot tap a 2nd time
-        try {
-          await Notifications.dismissNotificationAsync(
-            response.notification.request.identifier,
-          );
-        } catch {
-          /* Ignore if already dismissed by system */
-        }
-
-        let amountToLog = 0;
-
-        if (actionId === ACTION_LOG_250) {
-          amountToLog = 250;
-        } else if (actionId === ACTION_LOG_500) {
-          amountToLog = 500;
-        } else if (actionId === ACTION_LOG_CUSTOM) {
-          const userTyped = response.userText;
-          const parsed = parseInt(userTyped || "", 10);
-          if (!isNaN(parsed) && parsed > 0 && parsed <= 5000) {
-            amountToLog = parsed;
-          } else {
-            amountToLog = 250;
-          }
-        }
-
-        if (amountToLog > 0) {
-          await useHydrationStore.getState().addIntake(amountToLog, "water");
-          await sendQuickLogConfirmation(amountToLog);
-        }
-      });
-
-
-
-    return () => {
-      responseSubscription.remove();
-    };
   }, []);
 
   return (

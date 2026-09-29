@@ -254,18 +254,18 @@ const WaterBottleComponent = ({
         {/* 1. Bottle Glass Outer Shell */}
         <Path
           d={BOTTLE_PATH}
-          fill="rgba(240, 249, 255, 0.45)"
-          stroke="#bae6fd"
-          strokeWidth="1.8"
+          fill="rgba(240, 249, 255, 0.6)"
+          stroke="#7dd3fc"
+          strokeWidth="2.2"
         />
 
         {/* 2. Etched Measurement Ticks (Left Edge) */}
         <Path
           d="M 12 140 H 18 M 12 100 H 22 M 12 60 H 18"
-          stroke="#7dd3fc"
-          strokeWidth="1.2"
+          stroke="#0284c7"
+          strokeWidth="1.5"
           strokeLinecap="round"
-          opacity="0.5"
+          opacity="0.4"
         />
 
         {/* 3. Multi-Layer Liquid Flow */}
@@ -293,23 +293,23 @@ const WaterBottleComponent = ({
           stroke="white"
           strokeWidth="3.2"
           strokeLinecap="round"
-          opacity="0.35"
+          opacity="0.45"
         />
         <Path
           d="M20 75 V140"
           stroke="white"
           strokeWidth="1.6"
           strokeLinecap="round"
-          opacity="0.2"
+          opacity="0.3"
         />
 
         {/* 5. Bottle Cap / Rim Accent */}
         <Path
           d={`M ${BOTTLE_WIDTH * 0.28} ${BOTTLE_HEIGHT * 0.03} H ${BOTTLE_WIDTH * 0.72}`}
-          stroke="#38bdf8"
+          stroke="#0284c7"
           strokeWidth="2.5"
           strokeLinecap="round"
-          opacity="0.6"
+          opacity="0.8"
         />
       </Svg>
     </Animated.View>

@@ -3,7 +3,6 @@ import {
   Calendar,
   ChevronLeft,
   Droplets,
-  History as HistoryIcon,
   Trash2,
 } from "lucide-react-native";
 import React, { useState } from "react";
@@ -41,7 +40,7 @@ const getWeeklyDays = () => {
 
 const History = () => {
   const router = useRouter();
-  const { logs, removeLog, weeklyHistory, actualIntake, dailyReference, weeklyVolume } = useHydration();
+  const { logs, removeLog, weeklyHistory, actualIntake, weeklyVolume } = useHydration();
   const [isExpanded, setIsExpanded] = useState(false);
   const weeklyDays = getWeeklyDays();
 
@@ -60,7 +59,8 @@ const History = () => {
     };
   });
 
-  const maxVolume = Math.max(...chartData.map((d) => d.volume), dailyReference, 2000);
+  const maxVolume = Math.max(...chartData.map((d) => d.volume), 2000);
+  const todayTotal = logs.reduce((acc, log) => acc + log.amount, 0);
 
   const renderLogItem = ({ item }: { item: HydrationLog }) => {
     const beverage = BEVERAGES[item.type] || BEVERAGES.water;
@@ -71,21 +71,19 @@ const History = () => {
     });
 
     return (
-      <View className="bg-white p-4 rounded-3xl border border-sky-100 shadow-sm mb-3 flex-row items-center justify-between mx-6">
+      <View className="bg-white p-4 rounded-3xl border border-sky-100/80 shadow-xs mb-2.5 flex-row items-center justify-between mx-6">
         <View className="flex-row items-center flex-1 pr-2">
           <View
-            style={{ backgroundColor: `${beverage.color}20` }}
-            className="p-3 rounded-2xl mr-3.5"
+            style={{ backgroundColor: `${beverage.color}18` }}
+            className="p-2.5 rounded-2xl mr-3"
           >
-            <IconComponent size={22} color={beverage.color} strokeWidth={2.4} />
+            <IconComponent size={20} color={beverage.color} strokeWidth={2.4} />
           </View>
           <View className="flex-1">
-            <View className="flex-row items-baseline flex-wrap">
-              <Text className="text-sky-950 font-black text-sm">
-                {item.amount}ml {beverage.label}
-              </Text>
-            </View>
-            <Text className="text-sky-400/80 text-[10px] font-bold uppercase tracking-tight mt-0.5">
+            <Text className="text-sky-950 font-bold text-sm">
+              {item.amount} ml {beverage.label}
+            </Text>
+            <Text className="text-sky-400 text-[11px] font-medium mt-0.5">
               {time}
             </Text>
           </View>
@@ -95,9 +93,9 @@ const History = () => {
             hapticLight();
             removeLog(item.id);
           }}
-          className="p-2.5 bg-red-50 active:bg-red-100 rounded-full"
+          className="p-2 bg-red-50/80 active:bg-red-100 rounded-full"
         >
-          <Trash2 size={15} color="#ef4444" />
+          <Trash2 size={14} color="#ef4444" />
         </Pressable>
       </View>
     );
@@ -105,95 +103,72 @@ const History = () => {
 
   const renderHeader = () => (
     <View>
-      {/* Daily/Weekly Volume Summary Card */}
-      <View className="px-6 py-4">
-        <View className="bg-sky-500 p-6 rounded-4xl shadow-xl overflow-hidden">
-          <View className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full" />
-          <View className="absolute -left-10 -bottom-10 w-24 h-24 bg-white/5 rounded-full" />
-
-          <View className="flex-row items-center mb-6">
-            <View className="flex-1">
-              <Text className="text-sky-100 text-[10px] font-black uppercase tracking-widest mb-1">
-                Today
+      {/* Quiet Observational Summary Row */}
+      <View className="px-6 py-2">
+        <View className="bg-white p-5 rounded-3xl border border-sky-100/80 shadow-xs flex-row justify-between items-center">
+          <View className="flex-1">
+            <Text className="text-sky-900/40 text-[11px] font-bold uppercase tracking-wider mb-1">
+              Today
+            </Text>
+            <View className="flex-row items-baseline">
+              <Text className="text-sky-950 text-2xl font-black">
+                {Math.round(todayTotal)}
               </Text>
-              <View className="flex-row items-baseline">
-                <Text className="text-white text-4xl font-black">
-                  {Math.round(
-                    logs.reduce((acc, log) => acc + log.amount, 0),
-                  )}
-                </Text>
-                <Text className="text-sky-100 text-lg font-bold ml-1">ml</Text>
-              </View>
-            </View>
-            <View className="bg-white/20 p-3 rounded-2xl backdrop-blur-md border border-white/30">
-              <HistoryIcon size={24} color="white" />
+              <Text className="text-sky-400 text-xs font-bold ml-1">ml</Text>
             </View>
           </View>
 
-          <View className="h-px bg-white/20 w-full mb-6" />
+          <View className="w-px h-10 bg-sky-100 mx-4" />
 
-          <View className="flex-row justify-between items-center">
-            <View>
-              <Text className="text-sky-100 text-[10px] font-black uppercase tracking-widest mb-1">
-                This Week
+          <View className="flex-1">
+            <Text className="text-sky-900/40 text-[11px] font-bold uppercase tracking-wider mb-1">
+              This Week
+            </Text>
+            <View className="flex-row items-baseline">
+              <Text className="text-sky-950 text-2xl font-black">
+                {weeklyVolume}
               </Text>
-              <View className="flex-row items-baseline">
-                <Text className="text-white text-2xl font-black">
-                  {weeklyVolume}
-                </Text>
-                <Text className="text-sky-100 text-sm font-bold ml-1">ml</Text>
-              </View>
-            </View>
-            <View className="bg-white/10 px-3 py-1.5 rounded-full border border-white/10">
-              <Text className="text-white text-[10px] font-bold">
-                Resets Monday
-              </Text>
+              <Text className="text-sky-400 text-xs font-bold ml-1">ml</Text>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Weekly Intake Bar Chart */}
-      <View className="px-6 mb-4">
-        <View className="bg-white p-5 rounded-4xl border border-sky-100 shadow-sm">
-          <View className="flex-row justify-between items-center mb-4 px-1">
-            <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest">
+      {/* Weekly Rhythm Visualization */}
+      <View className="px-6 my-3">
+        <View className="bg-white p-5 rounded-3xl border border-sky-100/80 shadow-xs">
+          <View className="flex-row justify-between items-center mb-3 px-1">
+            <Text className="text-sky-900/40 text-[11px] font-bold uppercase tracking-wider">
               This Week
             </Text>
-            <Text className="text-sky-500 text-[10px] font-black">
-              Avg: {Math.round(weeklyVolume / 7)} ml/day
+            <Text className="text-sky-600/70 text-xs font-semibold">
+              Daily average ~{Math.round(weeklyVolume / 7)} ml
             </Text>
           </View>
-          
-          <View className="h-28 flex-row justify-between items-end relative px-2 mt-2">
-            {/* Reference Line */}
-            <View 
-              style={{ bottom: `${(dailyReference / maxVolume) * 100}%` as DimensionValue }}
-              className="absolute left-0 right-0 h-px border-b border-dashed border-sky-200 z-10 flex-row justify-end"
-            >
-              <Text className="text-[8px] font-black text-sky-400/60 -mt-3.5 bg-white px-1 mr-2 uppercase tracking-tighter">
-                Reference
-              </Text>
-            </View>
 
+          <View className="h-24 flex-row justify-between items-end px-2 mt-3">
             {chartData.map((day, idx) => {
               const heightPercent = `${Math.max(6, Math.min(100, (day.volume / maxVolume) * 100))}%` as DimensionValue;
-              
+
               return (
                 <View key={idx} className="items-center flex-1">
-                  <View className="h-20 w-full items-center justify-end">
+                  <View className="h-16 w-full items-center justify-end">
                     <View className="w-2.5 h-full bg-sky-50 rounded-full justify-end overflow-hidden">
-                      <View 
+                      <View
                         style={{ height: heightPercent }}
                         className={`w-full rounded-full ${
-                          day.isToday 
-                            ? "bg-sky-500 shadow-md" 
-                            : "bg-sky-300"
+                          day.isToday ? "bg-sky-500" : "bg-sky-200"
                         }`}
                       />
                     </View>
                   </View>
-                  <Text className={`text-[9px] font-bold mt-2 ${day.isToday ? "text-sky-500 font-black" : "text-sky-900/40"}`}>
+                  <Text
+                    className={`text-[10px] mt-2 ${
+                      day.isToday
+                        ? "text-sky-700 font-black"
+                        : "text-sky-900/40 font-semibold"
+                    }`}
+                  >
                     {day.label}
                   </Text>
                 </View>
@@ -205,17 +180,19 @@ const History = () => {
 
       {/* Beverage Fluid Distribution Breakdown */}
       {logs.length > 0 && (
-        <View className="px-6 mb-6">
-          <View className="bg-white p-5 rounded-4xl border border-sky-100 shadow-sm">
-            <Text className="text-sky-950/40 text-[10px] font-black uppercase tracking-widest mb-3 px-1">
-              {"Drinks today"}
+        <View className="px-6 mb-4">
+          <View className="bg-white p-5 rounded-3xl border border-sky-100/80 shadow-xs">
+            <Text className="text-sky-900/40 text-[11px] font-bold uppercase tracking-wider mb-3 px-1">
+              Drinks today
             </Text>
 
             {/* Distribution Stacked Bar */}
-            <View className="h-3 w-full bg-sky-50 rounded-full flex-row overflow-hidden mb-4">
+            <View className="h-2.5 w-full bg-sky-50 rounded-full flex-row overflow-hidden mb-3">
               {BEVERAGE_TYPES.map((bev) => {
                 const totalRaw = logs.reduce((acc, l) => acc + l.amount, 0);
-                const bVol = logs.filter((l) => l.type === bev).reduce((acc, l) => acc + l.amount, 0);
+                const bVol = logs
+                  .filter((l) => l.type === bev)
+                  .reduce((acc, l) => acc + l.amount, 0);
                 const pct = totalRaw > 0 ? (bVol / totalRaw) * 100 : 0;
                 if (pct <= 0) return null;
 
@@ -236,7 +213,9 @@ const History = () => {
             <View className="flex-row flex-wrap gap-2">
               {BEVERAGE_TYPES.map((bev) => {
                 const totalRaw = logs.reduce((acc, l) => acc + l.amount, 0);
-                const bVol = logs.filter((l) => l.type === bev).reduce((acc, l) => acc + l.amount, 0);
+                const bVol = logs
+                  .filter((l) => l.type === bev)
+                  .reduce((acc, l) => acc + l.amount, 0);
                 const pct = totalRaw > 0 ? Math.round((bVol / totalRaw) * 100) : 0;
                 if (bVol <= 0) return null;
 
@@ -245,14 +224,15 @@ const History = () => {
                 return (
                   <View
                     key={bev}
-                    className="flex-row items-center bg-sky-50/80 px-3 py-1.5 rounded-xl border border-sky-100"
+                    className="flex-row items-center bg-sky-50/70 px-2.5 py-1 rounded-xl border border-sky-100/60"
                   >
                     <View
                       style={{ backgroundColor: config.color }}
-                      className="w-2 h-2 rounded-full mr-2"
+                      className="w-2 h-2 rounded-full mr-1.5"
                     />
-                    <Text className="text-sky-950 font-bold text-xs">
-                      {config.label} <Text className="text-sky-400 text-[10px]">({pct}%)</Text>
+                    <Text className="text-sky-950 font-semibold text-xs">
+                      {config.label}{" "}
+                      <Text className="text-sky-400 text-[10px]">({pct}%)</Text>
                     </Text>
                   </View>
                 );
@@ -263,9 +243,9 @@ const History = () => {
       )}
 
       {/* Timeline Section Title */}
-      <View className="flex-row items-center mb-4 ml-7">
-        <Calendar size={14} color="#0ea5e9" />
-        <Text className="text-sky-900/40 text-xs font-black uppercase tracking-widest ml-2">
+      <View className="flex-row items-center mt-2 mb-3 ml-7">
+        <Calendar size={13} color="#0284c7" />
+        <Text className="text-sky-900/40 text-[11px] font-bold uppercase tracking-wider ml-1.5">
           Timeline
         </Text>
       </View>
@@ -274,9 +254,9 @@ const History = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-sky-50">
-      {/* Header */}
+      {/* Top Header */}
       <View className="px-6 py-4 flex-row items-center justify-between">
-        <Pressable onPress={() => router.back()} className="p-2 -ml-2">
+        <Pressable onPress={() => router.back()} className="p-2 -ml-2 rounded-full">
           <ChevronLeft color="#082f49" size={24} />
         </Pressable>
         <Text className="text-sky-950 text-xl font-black">History</Text>
@@ -285,19 +265,19 @@ const History = () => {
 
       {logs.length > 0 ? (
         <FlatList
-          data={isExpanded ? logs : logs.slice(0, 3)}
+          data={isExpanded ? logs : logs.slice(0, 4)}
           renderItem={renderLogItem}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={renderHeader}
           ListFooterComponent={() =>
-            logs.length > 3 ? (
+            logs.length > 4 ? (
               <Pressable
                 onPress={() => setIsExpanded(!isExpanded)}
-                className="bg-white p-4 rounded-3xl border border-sky-100 items-center justify-center mt-2 shadow-sm mb-10 mx-6"
+                className="bg-white p-3.5 rounded-2xl border border-sky-100/80 items-center justify-center mt-1 shadow-xs mb-10 mx-6"
               >
-                <Text className="text-sky-600 font-black text-xs uppercase tracking-widest">
-                  {isExpanded ? "Collapse List" : "Show All"}
+                <Text className="text-sky-600 font-bold text-xs">
+                  {isExpanded ? "Show Less" : `Show All (${logs.length} drinks)`}
                 </Text>
               </Pressable>
             ) : (
@@ -312,13 +292,12 @@ const History = () => {
           ListHeaderComponent={() => (
             <>
               {renderHeader()}
-              <View className="items-center justify-center py-10">
-                <View className="bg-white p-8 rounded-full border border-sky-100 shadow-sm mb-4">
-                  <HistoryIcon size={40} color="#bae6fd" />
-                </View>
-                <Text className="text-sky-950 font-black text-lg">No logs yet</Text>
-                <Text className="text-sky-400 text-sm text-center px-10 mt-2">
-                  Start drinking water to see your progress here!
+              <View className="items-center justify-center py-12 px-8">
+                <Text className="text-sky-950 font-bold text-base">
+                  No logs recorded today
+                </Text>
+                <Text className="text-sky-900/50 text-xs text-center mt-1.5 leading-5">
+                  Have a sip when you're ready. Your drinks will be logged here.
                 </Text>
               </View>
             </>

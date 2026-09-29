@@ -5,16 +5,11 @@ import {
   Info,
   Minus,
   Plus,
-  Save,
   ShieldCheck,
-  Sliders,
-  Smartphone,
   Trash2,
-  User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Linking,
   Pressable,
@@ -38,7 +33,6 @@ const Settings = () => {
   const [weight, setWeight] = useState("70");
   const [activity, setActivity] = useState<1 | 1.2 | 1.5>(1);
   const [tempUnit, setTempUnit] = useState<"C" | "F">("F");
-  const [isSaving, setIsSaving] = useState(false);
 
   const storeReminderInterval = useHydrationStore((s) => s.reminderInterval);
   const setStoreReminderInterval = useHydrationStore(
@@ -47,9 +41,6 @@ const Settings = () => {
   const storeHapticsEnabled = useHydrationStore((s) => s.hapticsEnabled);
   const setStoreHapticsEnabled = useHydrationStore((s) => s.setHapticsEnabled);
   const clearAllData = useHydrationStore((s) => s.clearAllData);
-
-  const [interval, setIntervalState] = useState(90);
-  const [haptics, setHaptics] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -60,13 +51,9 @@ const Settings = () => {
         setActivity(p.activityLevel || 1);
         setTempUnit(p.tempUnit || "F");
       }
-      setIntervalState(
-        storeReminderInterval !== undefined ? storeReminderInterval : 90,
-      );
-      setHaptics(storeHapticsEnabled ?? true);
     };
     load();
-  }, [storeReminderInterval, storeHapticsEnabled]);
+  }, []);
 
   const parsedWeight = parseFloat(weight) || 70;
   const simulatedReference = calculateDailyReference({
@@ -76,43 +63,59 @@ const Settings = () => {
     tempUnit,
   });
 
+  // Immediate save helper for profile changes
+  const updateAndSaveProfile = async (updates: Partial<UserProfile>) => {
+    const updated: UserProfile = {
+      ...profile,
+      weight: updates.weight ?? parsedWeight,
+      activityLevel: updates.activityLevel ?? activity,
+      tempUnit: updates.tempUnit ?? tempUnit,
+    };
+    setProfile(updated);
+    await saveProfile(updated);
+  };
+
   const adjustWeight = (delta: number) => {
     hapticLight();
     const current = parseFloat(weight) || 70;
     const next = Math.max(20, Math.min(300, current + delta));
     setWeight(next.toString());
+    updateAndSaveProfile({ weight: next });
   };
 
-  const handleSave = async () => {
-    const val = parseFloat(weight);
-    if (isNaN(val) || val <= 10 || val > 500) {
-      Alert.alert(
-        "Invalid Weight",
-        "Please enter a valid weight between 10 and 500 kg.",
-      );
-      return;
+  const handleWeightTextChange = (text: string) => {
+    setWeight(text);
+    const val = parseFloat(text);
+    if (!isNaN(val) && val >= 20 && val <= 300) {
+      updateAndSaveProfile({ weight: val });
     }
+  };
 
+  const handleActivityChange = (val: 1 | 1.2 | 1.5) => {
+    hapticLight();
+    setActivity(val);
+    updateAndSaveProfile({ activityLevel: val });
+  };
+
+  const handleTempUnitChange = (unit: "C" | "F") => {
+    hapticLight();
+    setTempUnit(unit);
+    updateAndSaveProfile({ tempUnit: unit });
+  };
+
+  const handleIntervalChange = async (minutes: number) => {
+    hapticLight();
+    await setStoreReminderInterval(minutes);
+  };
+
+  const handleHapticsToggle = () => {
     hapticMedium();
-    setIsSaving(true);
-    const newProfile: UserProfile = {
-      ...profile,
-      weight: val,
-      activityLevel: activity,
-      tempUnit,
-    };
-    await saveProfile(newProfile);
-    await setStoreReminderInterval(interval);
-    setStoreHapticsEnabled(haptics);
-    setIsSaving(false);
-    Alert.alert("Saved! 💧", "Your hydration preferences have been updated.", [
-      { text: "OK", onPress: () => router.back() },
-    ]);
+    setStoreHapticsEnabled(!storeHapticsEnabled);
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f0f9ff" }}>
-      {/* Top Navigation Bar */}
+      {/* Top Header */}
       <View className="px-6 py-4 flex-row items-center justify-between">
         <Pressable
           onPress={() => {
@@ -136,169 +139,127 @@ const Settings = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile details */}
-        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
-          <View className="flex-row items-center mb-5">
-            <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
-              <User size={20} color="#0284c7" />
+        {/* SECTION: YOUR DETAILS */}
+        <Text className="text-sky-900/50 text-[11px] font-bold uppercase tracking-wider mb-2 ml-2">
+          Your Details
+        </Text>
+        <View className="bg-white rounded-3xl border border-sky-100/80 shadow-xs mb-6 overflow-hidden">
+          {/* Weight Row */}
+          <View className="p-4 flex-row items-center justify-between border-b border-sky-50">
+            <View>
+              <Text className="text-sky-950 font-bold text-sm">Weight</Text>
+              <Text className="text-sky-400 text-xs">Used for baseline reference</Text>
             </View>
-            <View className="flex-1">
-              <Text className="text-sky-950 font-black text-base">
-                Your details
-              </Text>
-              <Text className="text-sky-500 text-xs font-medium">
-                Weight and daily movement
-              </Text>
-            </View>
-          </View>
-
-          {/* Weight stepper */}
-          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
-            Weight
-          </Text>
-          <View className="flex-row items-center bg-sky-50 p-2 rounded-2xl border border-sky-100 mb-5">
-            <Pressable
-              onPress={() => adjustWeight(-1)}
-              style={({ pressed }) => [
-                { transform: [{ scale: pressed ? 0.9 : 1 }] },
-              ]}
-              className="w-11 h-11 bg-white rounded-xl items-center justify-center border border-sky-100 shadow-sm"
-            >
-              <Minus size={18} color="#0284c7" strokeWidth={2.5} />
-            </Pressable>
-
-            <View className="flex-1 flex-row items-center justify-center px-4">
-              <TextInput
-                value={weight}
-                onChangeText={setWeight}
-                keyboardType="numeric"
-                style={{
-                  color: "#082f49",
-                  fontWeight: "900",
-                  fontSize: 24,
-                  textAlign: "center",
-                  padding: 0,
-                  minWidth: 60,
-                }}
-                maxLength={4}
-              />
-              <Text className="text-sky-400 font-bold text-base ml-1">kg</Text>
-            </View>
-
-            <Pressable
-              onPress={() => adjustWeight(1)}
-              style={({ pressed }) => [
-                { transform: [{ scale: pressed ? 0.9 : 1 }] },
-              ]}
-              className="w-11 h-11 bg-white rounded-xl items-center justify-center border border-sky-100 shadow-sm"
-            >
-              <Plus size={18} color="#0284c7" strokeWidth={2.5} />
-            </Pressable>
-          </View>
-
-          {/* Activity selector */}
-          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
-            Activity
-          </Text>
-          <View className="flex-row gap-2 mb-5">
-            {[
-              { label: "Sedentary", sub: "1.0x", value: 1 },
-              { label: "Active", sub: "1.2x", value: 1.2 },
-              { label: "Athletic", sub: "1.5x", value: 1.5 },
-            ].map((opt) => {
-              const isSelected = activity === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => {
-                    hapticLight();
-                    setActivity(opt.value as any);
-                  }}
+            <View className="flex-row items-center bg-sky-50 px-2 py-1 rounded-2xl border border-sky-100">
+              <Pressable
+                onPress={() => adjustWeight(-1)}
+                className="w-8 h-8 bg-white rounded-xl items-center justify-center border border-sky-100"
+              >
+                <Minus size={15} color="#0284c7" strokeWidth={2.5} />
+              </Pressable>
+              <View className="flex-row items-center px-3">
+                <TextInput
+                  value={weight}
+                  onChangeText={handleWeightTextChange}
+                  keyboardType="numeric"
                   style={{
-                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
-                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                    color: "#082f49",
+                    fontWeight: "800",
+                    fontSize: 18,
+                    textAlign: "center",
+                    padding: 0,
+                    minWidth: 40,
                   }}
-                  className="flex-1 py-3 px-2 rounded-2xl border items-center shadow-sm"
-                >
-                  <Text
-                    style={{ color: isSelected ? "#ffffff" : "#082f49" }}
-                    className="text-xs font-black"
-                  >
-                    {opt.label}
-                  </Text>
-                  <Text
-                    style={{ color: isSelected ? "#e0f2fe" : "#38bdf8" }}
-                    className="text-[9px] font-bold mt-0.5"
-                  >
-                    {opt.sub}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                  maxLength={4}
+                />
+                <Text className="text-sky-500 font-bold text-xs ml-1">kg</Text>
+              </View>
+              <Pressable
+                onPress={() => adjustWeight(1)}
+                className="w-8 h-8 bg-white rounded-xl items-center justify-center border border-sky-100"
+              >
+                <Plus size={15} color="#0284c7" strokeWidth={2.5} />
+              </Pressable>
+            </View>
           </View>
 
-          {/* Reference preview */}
-          <View className="bg-sky-50 p-4 rounded-2xl border border-sky-200/60">
-            <View className="flex-row items-center mb-1">
-              <Info size={16} color="#0284c7" />
-              <Text className="text-sky-900 text-xs font-semibold ml-2 flex-1">
-                Estimated daily reference:{" "}
-                <Text className="font-black text-sky-950 text-sm">
-                  ~{simulatedReference} ml
-                </Text>{" "}
-                / day
+          {/* Activity Row */}
+          <View className="p-4 border-b border-sky-50">
+            <Text className="text-sky-950 font-bold text-sm mb-2.5">
+              Daily Movement
+            </Text>
+            <View className="flex-row gap-2">
+              {[
+                { label: "Sedentary", value: 1 },
+                { label: "Active", value: 1.2 },
+                { label: "Athletic", value: 1.5 },
+              ].map((opt) => {
+                const isSelected = activity === opt.value;
+                return (
+                  <Pressable
+                    key={opt.value}
+                    onPress={() => handleActivityChange(opt.value as any)}
+                    style={{
+                      backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
+                      borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
+                    }}
+                    className="flex-1 py-2 rounded-xl border items-center shadow-xs"
+                  >
+                    <Text
+                      style={{ color: isSelected ? "#ffffff" : "#082f49" }}
+                      className="text-xs font-bold"
+                    >
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Estimated Reference Info Row */}
+          <View className="p-4 bg-sky-50/50 flex-row items-start">
+            <Info size={15} color="#0284c7" className="mt-0.5" />
+            <View className="flex-1 ml-2.5">
+              <Text className="text-sky-950 text-xs font-bold">
+                Estimated daily reference: ~{simulatedReference} ml
+              </Text>
+              <Text className="text-sky-500/80 text-[11px] leading-4 mt-0.5">
+                A gentle baseline based on your physiology, never a quota.
               </Text>
             </View>
-            <Text className="text-sky-500/80 text-[11px] leading-4 ml-6">
-              A general reference, not a limit or requirement.
-            </Text>
           </View>
         </View>
 
-        {/* Reminders and display */}
-        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
-          <View className="flex-row items-center mb-5">
-            <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
-              <Sliders size={20} color="#0284c7" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sky-950 font-black text-base">
-                Reminders & display
-              </Text>
-              <Text className="text-sky-500 text-xs font-medium">
-                Schedules, units, and vibrations
-              </Text>
-            </View>
-          </View>
-
-          {/* Reminder Frequency */}
-          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
-            Reminders
+        {/* SECTION: REMINDERS */}
+        <Text className="text-sky-900/50 text-[11px] font-bold uppercase tracking-wider mb-2 ml-2">
+          Reminders
+        </Text>
+        <View className="bg-white rounded-3xl border border-sky-100/80 shadow-xs mb-6 p-4">
+          <Text className="text-sky-950 font-bold text-sm mb-2.5">
+            Frequency
           </Text>
-          <View className="flex-row gap-2 mb-2">
+          <View className="flex-row gap-2 mb-3">
             {[
               { label: "Every 90m", value: 90 },
               { label: "Every 2h", value: 120 },
               { label: "Every 3h", value: 180 },
               { label: "Off", value: 0 },
             ].map((opt) => {
-              const isSelected = interval === opt.value;
+              const isSelected = storeReminderInterval === opt.value;
               return (
                 <Pressable
                   key={opt.value}
-                  onPress={() => {
-                    hapticLight();
-                    setIntervalState(opt.value);
-                  }}
+                  onPress={() => handleIntervalChange(opt.value)}
                   style={{
                     backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
                     borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
                   }}
-                  className="flex-1 py-2.5 rounded-2xl border items-center shadow-sm"
+                  className="flex-1 py-2.5 rounded-xl border items-center shadow-xs"
                 >
                   <Text
                     style={{ color: isSelected ? "#ffffff" : "#082f49" }}
-                    className="text-xs font-black"
+                    className="text-xs font-bold"
                   >
                     {opt.label}
                   </Text>
@@ -306,65 +267,61 @@ const Settings = () => {
               );
             })}
           </View>
-          <Text className="text-sky-400 text-[11px] mb-5 leading-4">
-            Gentle reminders throughout your waking hours (Quiet hours: 10:00 PM → 8:00 AM).
+          <Text className="text-sky-400 text-[11px] leading-4">
+            Quiet hours strictly active (10:00 PM → 8:00 AM).
           </Text>
+        </View>
 
+        {/* SECTION: DISPLAY & HAPTICS */}
+        <Text className="text-sky-900/50 text-[11px] font-bold uppercase tracking-wider mb-2 ml-2">
+          Display & Haptics
+        </Text>
+        <View className="bg-white rounded-3xl border border-sky-100/80 shadow-xs mb-6 overflow-hidden">
           {/* Temperature Unit */}
-          <Text className="text-sky-900/60 text-[11px] font-bold uppercase tracking-wider mb-2">
-            Temperature Unit
-          </Text>
-          <View className="flex-row gap-2 mb-5">
-            {[
-              { label: "Celsius (°C)", value: "C" },
-              { label: "Fahrenheit (°F)", value: "F" },
-            ].map((opt) => {
-              const isSelected = tempUnit === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => {
-                    hapticLight();
-                    setTempUnit(opt.value as any);
-                  }}
-                  style={{
-                    backgroundColor: isSelected ? "#0ea5e9" : "#f0f9ff",
-                    borderColor: isSelected ? "#0ea5e9" : "#e0f2fe",
-                  }}
-                  className="flex-1 py-2.5 rounded-2xl border items-center shadow-sm"
-                >
-                  <Text
-                    style={{ color: isSelected ? "#ffffff" : "#082f49" }}
-                    className="text-xs font-black"
+          <View className="p-4 flex-row items-center justify-between border-b border-sky-50">
+            <View>
+              <Text className="text-sky-950 font-bold text-sm">Temperature</Text>
+              <Text className="text-sky-400 text-xs">For ambient weather awareness</Text>
+            </View>
+            <View className="flex-row gap-1.5 bg-sky-50 p-1 rounded-xl border border-sky-100">
+              {(["C", "F"] as const).map((unit) => {
+                const isSelected = tempUnit === unit;
+                return (
+                  <Pressable
+                    key={unit}
+                    onPress={() => handleTempUnitChange(unit)}
+                    style={{
+                      backgroundColor: isSelected ? "#0ea5e9" : "transparent",
+                    }}
+                    className="px-3 py-1.5 rounded-lg"
                   >
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                    <Text
+                      style={{
+                        color: isSelected ? "#ffffff" : "#0284c7",
+                        fontWeight: "700",
+                        fontSize: 12,
+                      }}
+                    >
+                      °{unit}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
-          <View className="h-px bg-sky-100 w-full mb-3" />
-
-          {/* Haptic Toggle Switch */}
-          <View className="flex-row items-center justify-between py-1">
+          {/* Vibrations Toggle */}
+          <View className="p-4 flex-row items-center justify-between">
             <View>
-              <Text className="text-sky-950 font-bold text-sm">
-                Vibrations
-              </Text>
-              <Text className="text-sky-400 text-xs">
-                Feel taps when logging or filling a bottle
-              </Text>
+              <Text className="text-sky-950 font-bold text-sm">Tactile Vibrations</Text>
+              <Text className="text-sky-400 text-xs">Subtle haptic pulses when logging</Text>
             </View>
             <Pressable
-              onPress={() => {
-                hapticMedium();
-                setHaptics(!haptics);
-              }}
+              onPress={handleHapticsToggle}
               style={{
-                backgroundColor: haptics ? "#0ea5e9" : "#e2e8f0",
+                backgroundColor: storeHapticsEnabled ? "#0ea5e9" : "#e2e8f0",
                 justifyContent: "center",
-                alignItems: haptics ? "flex-end" : "flex-start",
+                alignItems: storeHapticsEnabled ? "flex-end" : "flex-start",
               }}
               className="w-12 h-7 rounded-full p-1"
             >
@@ -373,29 +330,17 @@ const Settings = () => {
           </View>
         </View>
 
-        {/* Data and privacy */}
-        <View className="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm mb-5">
-          <View className="flex-row items-center mb-4">
-            <View className="bg-sky-100 p-3 rounded-2xl mr-3.5">
-              <Smartphone size={20} color="#0284c7" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sky-950 font-black text-base">
-                Data & Privacy
-              </Text>
-              <Text className="text-sky-500 text-xs font-medium">
-                100% offline & stored locally on device
-              </Text>
-            </View>
-          </View>
-
-          {/* Privacy policy link */}
+        {/* SECTION: DATA & PRIVACY */}
+        <Text className="text-sky-900/50 text-[11px] font-bold uppercase tracking-wider mb-2 ml-2">
+          Data & Privacy
+        </Text>
+        <View className="bg-white rounded-3xl border border-sky-100/80 shadow-xs mb-8 overflow-hidden">
           <Pressable
             onPress={() => {
               hapticLight();
               Linking.openURL("https://snaehath.github.io/AquaFlow/#privacy");
             }}
-            className="flex-row items-center justify-between py-3.5 border-b border-sky-50 active:opacity-60"
+            className="p-4 flex-row items-center justify-between border-b border-sky-50 active:bg-sky-50/50"
           >
             <View className="flex-row items-center">
               <ShieldCheck size={16} color="#0284c7" />
@@ -406,7 +351,6 @@ const Settings = () => {
             <ExternalLink size={14} color="#94a3b8" />
           </Pressable>
 
-          {/* Wipe data button */}
           <Pressable
             onPress={() => {
               Alert.alert(
@@ -420,8 +364,8 @@ const Settings = () => {
                     onPress: () => {
                       clearAllData();
                       Alert.alert(
-                        "Data Wiped",
-                        "All local data has been successfully cleared.",
+                        "Data Cleared",
+                        "All local data has been erased.",
                         [{ text: "OK", onPress: () => router.replace("/") }],
                       );
                     },
@@ -429,7 +373,7 @@ const Settings = () => {
                 ],
               );
             }}
-            className="flex-row items-center justify-between py-3.5 active:opacity-60"
+            className="p-4 flex-row items-center justify-between active:bg-red-50/40"
           >
             <View className="flex-row items-center">
               <Trash2 size={16} color="#ef4444" />
@@ -437,31 +381,12 @@ const Settings = () => {
                 Erase All Data
               </Text>
             </View>
-            <Text className="text-red-400 text-xs font-bold">Reset</Text>
+            <Text className="text-red-400 text-xs font-semibold">Reset</Text>
           </Pressable>
         </View>
-
-        {/* Save Button */}
-        <Pressable
-          onPress={handleSave}
-          disabled={isSaving}
-          className="bg-sky-500 active:bg-sky-600 p-4 rounded-2xl flex-row items-center justify-center shadow-md mb-6"
-        >
-          {isSaving ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <>
-              <Save color="white" size={18} />
-              <Text className="text-white font-black text-base ml-2">
-                Save Changes
-              </Text>
-            </>
-          )}
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 export default Settings;
-
